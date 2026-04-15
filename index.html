@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zhen Lab · Consulta Clínica</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#F5F3EE;--dark-green:#1A2E1A;--mid-green:#3D6B3D;--light-green:#8AAA8A;--ink:#1A2E1A;--muted:#7A8C7A;--border:rgba(26,46,26,0.12);--card-bg:rgba(255,255,255,0.7)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Mono',monospace;background:var(--cream);color:var(--ink);min-height:100vh;position:relative;overflow-x:hidden}
+body::before{content:"診";position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:60vw;color:rgba(26,46,26,0.03);pointer-events:none;z-index:0;line-height:1;user-select:none}
+.container{max-width:900px;margin:0 auto;padding:0 24px 80px;position:relative;z-index:1}
+header{padding:40px 0 32px;border-bottom:1px solid var(--border);margin-bottom:40px;display:flex;align-items:center;justify-content:space-between}
+.logo-area h1{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:4px;text-transform:uppercase;color:var(--dark-green)}
+.logo-area p{font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:4px;text-transform:uppercase}
+.header-kanji{font-size:48px;color:var(--light-green);opacity:0.4;line-height:1}
+.search-section{margin-bottom:32px}
+.search-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:block}
+.search-row{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.search-input{flex:1;min-width:240px;padding:14px 18px;border:1px solid var(--border);background:white;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;transition:border-color .2s;border-radius:2px}
+.search-input:focus{border-color:var(--mid-green)}
+.search-input::placeholder{color:var(--light-green)}
+.filter-capsulas{display:flex;align-items:center;gap:8px;padding:14px 18px;border:1px solid var(--border);background:white;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);border-radius:2px;white-space:nowrap;transition:all .2s;user-select:none}
+.filter-capsulas:hover{border-color:var(--mid-green);color:var(--ink)}
+.filter-capsulas.active{background:var(--dark-green);color:white;border-color:var(--dark-green)}
+.check-icon{width:16px;height:16px;border:1px solid currentColor;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.peso-row{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.peso-input-wrap{display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:white;padding:10px 16px;border-radius:2px}
+.peso-input-wrap label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.peso-input{width:70px;border:none;outline:none;font-family:'DM Mono',monospace;font-size:14px;color:var(--dark-green);background:transparent;text-align:center}
+.peso-unit{font-size:11px;color:var(--muted)}
+.tags-section{margin-bottom:32px}
+.tags-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:block}
+.tags-grid{display:flex;flex-wrap:wrap;gap:8px}
+.tag{padding:7px 14px;border:1px solid var(--border);background:white;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;border-radius:20px;transition:all .2s;white-space:nowrap}
+.tag:hover{border-color:var(--mid-green);color:var(--ink)}
+.tag.active{background:var(--mid-green);color:white;border-color:var(--mid-green)}
+.divider{height:1px;background:var(--border);margin:32px 0}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.results-count{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.results-count span{color:var(--dark-green)}
+.products-grid{display:grid;gap:12px}
+.product-card{background:var(--card-bg);border:1px solid var(--border);border-radius:2px;padding:20px 24px;transition:all .2s;cursor:pointer}
+.product-card:hover{border-color:var(--mid-green);box-shadow:0 2px 16px rgba(26,46,26,0.06)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:6px}
+.card-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--dark-green);line-height:1.2}
+.card-chinese{font-size:11px;color:var(--light-green);letter-spacing:1px;margin-top:3px;font-family:'Cormorant Garamond',serif;font-style:italic}
+.card-badges{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:2px}
+.badge-cat{background:rgba(61,107,61,0.1);color:var(--mid-green);border:1px solid rgba(61,107,61,0.2)}
+.badge-formato{background:rgba(26,46,26,0.05);color:var(--muted);border:1px solid var(--border)}
+.card-indicaciones{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;margin-top:8px}
+.card-body{display:none;padding-top:14px;border-top:1px solid var(--border);margin-top:4px}
+.product-card.expanded .card-body{display:block}
+.card-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:600px){.card-row{grid-template-columns:1fr}}
+.info-block{margin-bottom:14px}
+.info-block label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.info-block p{font-size:12px;color:var(--ink);line-height:1.6}
+.dosis-calc{background:rgba(61,107,61,0.06);border:1px solid rgba(61,107,61,0.15);padding:12px 16px;border-radius:2px;margin-bottom:14px}
+.dosis-calc label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mid-green);display:block;margin-bottom:6px}
+.dosis-value{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--dark-green);font-weight:400}
+.dosis-detail{font-size:11px;color:var(--muted);margin-top:3px}
+.precaucion-block{background:rgba(180,100,0,0.05);border:1px solid rgba(180,100,0,0.15);padding:10px 14px;border-radius:2px;margin-bottom:14px}
+.precaucion-block label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8B6000;display:block;margin-bottom:4px}
+.precaucion-block p{font-size:11px;color:#6B4800;line-height:1.5}
+.precio-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:1px solid var(--border);margin-top:4px}
+.precio-value{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--dark-green);font-weight:300}
+.precio-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px}
+.btn-whatsapp{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--dark-green);color:white;border:none;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:background .2s}
+.btn-whatsapp:hover{background:var(--mid-green)}
+.expand-hint{font-size:10px;letter-spacing:1px;color:var(--light-green);text-transform:uppercase;margin-top:4px;display:flex;align-items:center;gap:6px}
+.expand-hint::after{content:'↓';transition:transform .2s}
+.product-card.expanded .expand-hint::after{transform:rotate(180deg)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-kanji{font-size:48px;opacity:.2;margin-bottom:12px}
+.section-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:12px;margin-top:24px}
+.section-label:first-child{margin-top:0}
+.yt-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--mid-green);text-decoration:none;margin-top:6px}
+.yt-link:hover{text-decoration:underline}
+
+/* ═══ PACIENTES (página principal) ═══ */
+#pacSection{border-top:1px solid var(--border);margin-top:40px;padding-top:32px}
+.pac-main-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.pac-main-title{font-family:"Cormorant Garamond",serif;font-size:22px;font-weight:300;color:var(--dark-green);letter-spacing:2px}
+.pac-main-search{display:flex;gap:10px;flex-wrap:wrap}
+.pac-main-search input{padding:10px 14px;border:1px solid var(--border);background:white;font-family:"DM Mono",monospace;font-size:12px;outline:none;border-radius:2px;min-width:200px}
+.pac-main-search input:focus{border-color:var(--mid-green)}
+#pacList{display:flex;flex-direction:column;gap:10px}
+.pac-card{background:var(--card-bg);border:1px solid var(--border);border-radius:2px;overflow:hidden;transition:border-color .2s}
+.pac-card:hover{border-color:var(--light-green)}
+.pac-card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;gap:12px}
+.pac-name{font-family:"Cormorant Garamond",serif;font-size:19px;color:var(--dark-green)}
+.pac-meta{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:1px}
+.pac-badge{font-size:9px;padding:3px 10px;border-radius:10px;background:rgba(61,107,61,0.1);color:var(--mid-green);letter-spacing:1px;flex-shrink:0}
+.pac-body{display:none;border-top:1px solid var(--border);padding:20px}
+.pac-card.open .pac-body{display:block}
+.pac-card.open .pac-card-header{background:rgba(61,107,61,0.04)}
+.pac-section-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mid-green);margin:16px 0 10px;padding-bottom:4px;border-bottom:1px solid rgba(61,107,61,0.2)}
+.pac-section-title:first-child{margin-top:0}
+.pac-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;color:var(--ink);line-height:1.8}
+@media(max-width:600px){.pac-info-grid{grid-template-columns:1fr}}
+.pac-info-grid b{color:var(--muted);font-weight:normal;font-size:10px;letter-spacing:1px;text-transform:uppercase}
+.pac-form{display:flex;flex-direction:column;gap:12px}
+.pac-field label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.pac-field input,.pac-field textarea,.pac-field select{width:100%;padding:8px 12px;border:1px solid var(--border);background:white;font-family:"DM Mono",monospace;font-size:12px;color:var(--ink);outline:none;border-radius:2px}
+.pac-field input:focus,.pac-field textarea:focus{border-color:var(--mid-green)}
+.pac-field textarea{resize:vertical;min-height:60px}
+.pac-radio-group{display:flex;gap:8px;flex-wrap:wrap}
+.pac-radio-group label{padding:6px 12px;border:1px solid var(--border);border-radius:20px;font-size:11px;cursor:pointer;color:var(--muted);transition:all .2s}
+.pac-radio-group input[type=radio]{display:none}
+.pac-radio-group input[type=radio]:checked + label{background:var(--mid-green);color:white;border-color:var(--mid-green)}
+.pac-slider-row{display:flex;align-items:center;gap:12px}
+.pac-slider{flex:1;accent-color:var(--mid-green)}
+.pac-slider-val{font-family:"Cormorant Garamond",serif;font-size:22px;color:var(--dark-green);min-width:30px;text-align:center}
+.seguimiento-item{border:1px solid var(--border);border-radius:2px;padding:14px;margin-bottom:8px;background:white}
+.seguimiento-date{font-size:9px;letter-spacing:1px;color:var(--muted);margin-bottom:8px;text-transform:uppercase}
+.seguimiento-data{font-size:11px;color:var(--ink);line-height:1.9}
+.evol-bar{display:flex;align-items:center;gap:8px;margin:2px 0 4px}
+.evol-track{flex:1;height:4px;background:var(--border);border-radius:2px}
+.evol-fill{height:100%;border-radius:2px;background:var(--mid-green)}
+.pac-btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+.pac-btn{padding:8px 16px;border:none;font-family:"DM Mono",monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:background .2s}
+.pac-btn-primary{background:var(--dark-green);color:white}
+.pac-btn-primary:hover{background:var(--mid-green)}
+.pac-btn-secondary{background:rgba(61,107,61,0.1);color:var(--mid-green)}
+.pac-btn-secondary:hover{background:rgba(61,107,61,0.2)}
+.pac-btn-danger{background:rgba(180,0,0,0.08);color:#8B0000}
+.pac-btn-danger:hover{background:rgba(180,0,0,0.15)}
+.pac-save-status{font-size:11px;color:var(--mid-green)}
+.pac-save-status.error{color:#8B0000}
+.form-seg-wrap{margin-top:16px;border-top:1px solid var(--border);padding-top:16px;display:none}
+
+/* modal nueva ficha */
+.pac-modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,10,0.7);z-index:3000;overflow-y:auto;padding:20px;backdrop-filter:blur(4px)}
+.pac-modal-overlay.visible{display:flex;align-items:flex-start;justify-content:center}
+.pac-modal{background:var(--cream);border:1px solid var(--border);width:100%;max-width:620px;border-radius:4px;overflow:hidden;margin:auto}
+.pac-modal-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.pac-modal-header span{font-family:"Cormorant Garamond",serif;font-size:20px;color:var(--dark-green)}
+.pac-modal-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)}
+.pac-modal-body{padding:20px 24px}
+
+/* ═══ ASISTENTE GEMINI ═══ */
+#geminiBtn{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 28px;background:var(--dark-green);color:white;border:none;font-family:"DM Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:20px;z-index:1000;box-shadow:0 4px 20px rgba(26,46,26,0.25);transition:all .2s;display:flex;align-items:center;gap:8px}
+#geminiBtn:hover{background:var(--mid-green)}
+#geminiBtn .gem-dot{width:7px;height:7px;border-radius:50%;background:var(--light-green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+#geminiOverlay{display:none;position:fixed;inset:0;background:rgba(10,20,10,0.7);z-index:3000;backdrop-filter:blur(4px);overflow-y:auto;padding:20px}
+#geminiOverlay.visible{display:flex;align-items:flex-start;justify-content:center}
+#geminiPanel{background:var(--cream);border:1px solid var(--border);width:100%;max-width:700px;border-radius:4px;overflow:hidden;margin:auto}
+#geminiHeader{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+#geminiHeader h2{font-family:"Cormorant Garamond",serif;font-size:22px;font-weight:300;color:var(--dark-green);letter-spacing:2px}
+#geminiClose{background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);padding:4px}
+#geminiBody{padding:24px}
+.gem-chips-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:block}
+#geminiChips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.gem-chip{padding:7px 14px;border:1px solid var(--border);background:white;font-family:"DM Mono",monospace;font-size:11px;color:var(--muted);cursor:pointer;border-radius:20px;transition:all .2s}
+.gem-chip:hover{border-color:var(--mid-green);color:var(--ink)}
+#geminiInput{width:100%;padding:12px 16px;border:1px solid var(--border);background:white;font-family:"DM Mono",monospace;font-size:13px;color:var(--ink);outline:none;border-radius:2px;resize:vertical;min-height:100px;line-height:1.6;margin-bottom:12px}
+#geminiInput:focus{border-color:var(--mid-green)}
+#geminiSendBtn{padding:10px 24px;background:var(--dark-green);color:white;border:none;font-family:"DM Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:2px}
+#geminiSendBtn:hover{background:var(--mid-green)}
+#geminiSendBtn:disabled{opacity:0.5;cursor:default}
+#geminiResponse{margin-top:20px;padding:16px;background:white;border:1px solid var(--border);border-radius:2px;display:none}
+#geminiResponse .gem-resp-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mid-green);margin-bottom:10px;display:block}
+#geminiResponseText{font-size:12px;color:var(--ink);line-height:1.8;white-space:pre-wrap}
+.gem-loading{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:11px}
+.gem-loading span{width:6px;height:6px;border-radius:50%;background:var(--light-green);animation:bounce .9s infinite}
+.gem-loading span:nth-child(2){animation-delay:.15s}
+.gem-loading span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* ═══ PANEL ADMIN ═══ */
+#adminBtn{position:fixed;bottom:20px;right:20px;width:36px;height:36px;border-radius:50%;background:var(--dark-green);border:none;cursor:pointer;z-index:1000;opacity:0.3;transition:opacity .2s;display:flex;align-items:center;justify-content:center}
+#adminBtn:hover{opacity:1}
+#adminBtn svg{width:16px;height:16px;fill:white}
+#adminOverlay{display:none;position:fixed;inset:0;background:rgba(10,20,10,0.7);z-index:2000;backdrop-filter:blur(4px);overflow-y:auto;padding:20px}
+#adminOverlay.visible{display:flex;align-items:flex-start;justify-content:center}
+#adminPanel{background:var(--cream);border:1px solid var(--border);width:100%;max-width:760px;display:flex;flex-direction:column;border-radius:4px;overflow:hidden;position:relative;margin:auto}
+#adminHeader{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#adminHeader h2{font-family:"Cormorant Garamond",serif;font-size:22px;font-weight:300;color:var(--dark-green);letter-spacing:2px}
+#adminClose{background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);line-height:1;padding:4px}
+#adminLogin{padding:40px 24px;display:flex;flex-direction:column;gap:16px;align-items:center}
+#adminLogin p{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.admin-pw-row{display:flex;gap:8px;width:100%;max-width:360px}
+#adminPwInput{flex:1;padding:10px 14px;border:1px solid var(--border);background:white;font-family:"DM Mono",monospace;font-size:13px;outline:none;border-radius:2px}
+#adminPwInput:focus{border-color:var(--mid-green)}
+#adminPwBtn{padding:10px 18px;background:var(--dark-green);color:white;border:none;font-family:"DM Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:2px}
+#adminPwError{font-size:11px;color:#8B0000;display:none}
+#adminContent{display:none;flex-direction:column;flex:1}
+.admin-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.admin-tab{flex:1;padding:12px;font-family:"DM Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.admin-tab.active{color:var(--dark-green);border-bottom-color:var(--dark-green)}
+.admin-tab-content{display:none;flex-direction:column}
+.admin-tab-content.active{display:flex}
+#adminSearch{padding:16px 24px;border-bottom:1px solid var(--border);flex-shrink:0}
+#adminSearchInput{width:100%;padding:10px 14px;border:1px solid var(--border);background:white;font-family:"DM Mono",monospace;font-size:12px;outline:none;border-radius:2px}
+#adminList{flex:1;padding:16px 24px;display:flex;flex-direction:column;gap:8px}
+.admin-item{border:1px solid var(--border);border-radius:2px;background:white;overflow:hidden}
+.admin-item-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;gap:12px}
+.admin-item-header:hover{background:rgba(61,107,61,0.04)}
+.admin-item-name{font-family:"Cormorant Garamond",serif;font-size:16px;color:var(--dark-green)}
+.admin-item-sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px}
+.admin-item-price{font-family:"Cormorant Garamond",serif;font-size:18px;color:var(--mid-green);flex-shrink:0}
+.admin-item-body{display:none;padding:16px;border-top:1px solid var(--border);background:rgba(245,243,238,0.5)}
+.admin-item.open .admin-item-body{display:block}
+.admin-item.open .admin-item-header{background:rgba(61,107,61,0.06)}
+.admin-field{margin-bottom:14px}
+.admin-field label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.admin-field input,.admin-field textarea{width:100%;padding:8px 12px;border:1px solid var(--border);background:white;font-family:"DM Mono",monospace;font-size:12px;color:var(--ink);outline:none;border-radius:2px;line-height:1.5}
+.admin-field input:focus,.admin-field textarea:focus{border-color:var(--mid-green)}
+.admin-field textarea{resize:vertical;min-height:80px}
+.admin-field textarea.wsp-area{min-height:140px;font-size:11px}
+.admin-save-row{display:flex;align-items:center;gap:12px;margin-top:4px}
+.admin-save-btn{padding:8px 20px;background:var(--dark-green);color:white;border:none;font-family:"DM Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:background .2s}
+.admin-save-btn:hover{background:var(--mid-green)}
+.admin-save-btn:disabled{opacity:0.5;cursor:default}
+.admin-save-status{font-size:11px;color:var(--mid-green);display:none}
+.admin-save-status.error{color:#8B0000}
+#adminLogout{padding:12px 24px;border-top:1px solid var(--border);flex-shrink:0;display:flex;justify-content:space-between;align-items:center}
+.admin-db-status{font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:10px;background:rgba(61,107,61,0.1);color:var(--mid-green)}
+.admin-db-status.offline{background:rgba(180,100,0,0.1);color:#8B6000}
+#adminLogoutBtn{font-size:10px;letter-spacing:1px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:"DM Mono",monospace}
+#chipsSection{padding:16px 24px}
+.chips-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.chip-row{display:flex;align-items:center;gap:8px}
+.chip-row input{flex:1;padding:8px 12px;border:1px solid var(--border);background:white;font-family:"DM Mono",monospace;font-size:12px;outline:none;border-radius:2px}
+.chip-del{padding:6px 10px;background:none;border:1px solid var(--border);color:var(--muted);cursor:pointer;border-radius:2px;font-size:12px}
+.chip-del:hover{border-color:#8B0000;color:#8B0000}
+.chips-add-row{display:flex;gap:8px;margin-bottom:16px}
+.chips-add-row input{flex:1;padding:8px 12px;border:1px solid var(--border);background:white;font-family:"DM Mono",monospace;font-size:12px;outline:none;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo-area">
+      <h1>Zhen Lab</h1>
+      <p>Extractos · Adaptógenos · Premium — Consulta Clínica</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onclick="switchView('catalogo')" id="nav-catalogo" style="padding:8px 16px;background:var(--dark-green);color:white;border:none;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:2px">Catálogo</button>
+      <button onclick="switchView('pacientes')" id="nav-pacientes" style="padding:8px 16px;background:transparent;color:var(--muted);border:1px solid var(--border);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:2px">Pacientes</button>
+      <div class="header-kanji">診</div>
+    </div>
+  </header>
+
+  <div id="view-catalogo">
+  <div class="search-section">
+    <span class="search-label">Búsqueda libre — escribí el síntoma, cómo se siente el paciente, o el nombre del producto</span>
+    <div class="search-row">
+      <input type="text" class="search-input" id="searchInput" placeholder="ej: no puedo dormir, me siento agotada, me duelen las articulaciones, insomnio..." oninput="filterProducts()"/>
+      <div class="filter-capsulas" id="filterCapsulas" onclick="toggleCapsulas()">
+        <div class="check-icon" id="checkIcon"></div>
+        Paciente no consume alcohol
+      </div>
+    </div>
+    <div class="peso-row">
+      <div class="peso-input-wrap">
+        <label>Peso paciente</label>
+        <input type="number" class="peso-input" id="pesoInput" placeholder="70" min="30" max="200" oninput="updateDosis()"/>
+        <span class="peso-unit">kg</span>
+      </div>
+      <span style="font-size:11px;color:var(--muted)">↳ Dosis Cultivamente = peso ÷ 2 gotas por toma</span>
+    </div>
+  </div>
+
+  <div class="tags-section">
+    <span class="tags-label">Filtro rápido por área terapéutica</span>
+    <div class="tags-grid">
+      <div class="tag" onclick="toggleTag(this,'estres')">Estrés</div>
+      <div class="tag" onclick="toggleTag(this,'sueno')">Sueño</div>
+      <div class="tag" onclick="toggleTag(this,'memoria')">Memoria / Cognitivo</div>
+      <div class="tag" onclick="toggleTag(this,'hormonal')">Hormonal</div>
+      <div class="tag" onclick="toggleTag(this,'inmunidad')">Inmunidad</div>
+      <div class="tag" onclick="toggleTag(this,'inflamacion')">Inflamación</div>
+      <div class="tag" onclick="toggleTag(this,'higado')">Hígado / Metabólico</div>
+      <div class="tag" onclick="toggleTag(this,'energia')">Energía</div>
+      <div class="tag" onclick="toggleTag(this,'digestivo')">Digestivo</div>
+      <div class="tag" onclick="toggleTag(this,'cardiovascular')">Cardiovascular</div>
+      <div class="tag" onclick="toggleTag(this,'piel')">Piel</div>
+      <div class="tag" onclick="toggleTag(this,'oncologia')">Oncología complementaria</div>
+      <div class="tag" onclick="toggleTag(this,'prostata')">Próstata / Urinario</div>
+      <div class="tag" onclick="toggleTag(this,'libido')">Libido / Fertilidad</div>
+      <div class="tag" onclick="toggleTag(this,'menopausia')">Menopausia / SPM</div>
+      <div class="tag" onclick="toggleTag(this,'glucemia')">Glucemia / Diabetes</div>
+      <div class="tag" onclick="toggleTag(this,'parasitos')">Desparasitación</div>
+      <div class="tag" onclick="toggleTag(this,'ansiedad')">Ansiedad</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="results-header">
+    <span class="results-count">Mostrando <span id="countDisplay">—</span> productos</span>
+    <span style="font-size:10px;color:var(--muted);letter-spacing:1px">Clic en producto para ver protocolo completo</span>
+  </div>
+  <div class="products-grid" id="productsGrid"></div>
+
+  </div><!-- end view-catalogo -->
+
+  <!-- SECCIÓN PACIENTES -->
+  <div id="view-pacientes" style="display:none">
+  <div id="pacSection" style="padding-top:0;border-top:none;margin-top:0">
+    <div class="pac-main-header">
+      <div class="pac-main-title">Seguimiento de Pacientes</div>
+      <div class="pac-main-search">
+        <input type="text" id="pacSearchInput" placeholder="Buscar paciente..." oninput="renderPacientes()"/>
+        <button class="btn-whatsapp" onclick="abrirNuevoPaciente()">+ Nuevo paciente</button>
+      </div>
+    </div>
+    <div id="pacList"></div>
+  </div>
+  </div><!-- end view-pacientes -->
+</div>
+
+<!-- Botón asistente -->
+<button id="geminiBtn" onclick="openGemini()">
+  <div class="gem-dot"></div>
+  ¿Qué le pasa al paciente?
+</button>
+
+<!-- Botón admin -->
+<button id="adminBtn" onclick="openAdmin()" title="Admin">
+  <svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg>
+</button>
+
+<!-- MODAL NUEVO PACIENTE -->
+<div class="pac-modal-overlay" id="modalNuevoPaciente">
+  <div class="pac-modal">
+    <div class="pac-modal-header">
+      <span>Nuevo paciente</span>
+      <button class="pac-modal-close" onclick="cerrarModalPaciente()">✕</button>
+    </div>
+    <div class="pac-modal-body">
+      <div class="pac-form">
+        <div class="pac-field"><label>Nombre o alias</label><input type="text" id="np-nombre"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="pac-field"><label>Edad</label><input type="number" id="np-edad" min="1" max="120"/></div>
+          <div class="pac-field"><label>Peso (kg)</label><input type="number" id="np-peso" min="20" max="300" placeholder="70"/></div>
+        </div>
+        <div class="pac-field"><label>Sexo</label>
+          <div class="pac-radio-group">
+            <input type="radio" name="np-sexo" id="nps-F" value="Femenino"><label for="nps-F">Femenino</label>
+            <input type="radio" name="np-sexo" id="nps-M" value="Masculino"><label for="nps-M">Masculino</label>
+            <input type="radio" name="np-sexo" id="nps-O" value="Otro"><label for="nps-O">Otro</label>
+          </div>
+        </div>
+        <div class="pac-field"><label>1. Motivo principal de consulta</label><input type="text" id="np-motivo" placeholder="Síntoma eje, uno solo"/></div>
+        <div class="pac-field"><label>2. ¿Hace cuánto tiempo?</label>
+          <div class="pac-radio-group">
+            <input type="radio" name="np-tiempo" id="npt-D" value="Días"><label for="npt-D">Días</label>
+            <input type="radio" name="np-tiempo" id="npt-S" value="Semanas"><label for="npt-S">Semanas</label>
+            <input type="radio" name="np-tiempo" id="npt-M" value="Meses"><label for="npt-M">Meses</label>
+            <input type="radio" name="np-tiempo" id="npt-A" value="Años"><label for="npt-A">Años</label>
+          </div>
+        </div>
+        <div class="pac-field"><label>3. Intensidad hoy (1=nada · 10=muy intenso)</label>
+          <div class="pac-slider-row">
+            <input type="range" class="pac-slider" id="np-intensidad" min="1" max="10" value="5" oninput="document.getElementById('np-int-val').textContent=this.value"/>
+            <div class="pac-slider-val" id="np-int-val">5</div>
+          </div>
+        </div>
+        <div class="pac-field"><label>4. ¿Tiene diagnóstico o estudios?</label>
+          <div class="pac-radio-group">
+            <input type="radio" name="np-diag" id="npd-S" value="Sí"><label for="npd-S">Sí</label>
+            <input type="radio" name="np-diag" id="npd-N" value="No"><label for="npd-N">No</label>
+          </div>
+          <input type="text" id="np-diag-det" placeholder="¿Cuál?" style="margin-top:6px"/>
+        </div>
+        <div class="pac-field"><label>5. Medicación o suplementos actuales</label><input type="text" id="np-medicacion" placeholder="Nombre y dosis"/></div>
+        <div class="pac-field"><label>6. Alimentación actual</label><input type="text" id="np-alimentacion" placeholder="Ej: equilibrada, sin gluten, vegana, alta en azúcar..."/></div>
+        <div class="pac-field"><label>7. Calidad de sueño</label>
+          <div class="pac-radio-group">
+            <input type="radio" name="np-sueno" id="nps2-MB" value="Muy buena"><label for="nps2-MB">Muy buena</label>
+            <input type="radio" name="np-sueno" id="nps2-B" value="Buena"><label for="nps2-B">Buena</label>
+            <input type="radio" name="np-sueno" id="nps2-R" value="Regular"><label for="nps2-R">Regular</label>
+            <input type="radio" name="np-sueno" id="nps2-M" value="Mala"><label for="nps2-M">Mala</label>
+          </div>
+        </div>
+        <div class="pac-field"><label>8. Nivel de estrés actual</label>
+          <div class="pac-radio-group">
+            <input type="radio" name="np-est" id="npe-B" value="Bajo"><label for="npe-B">Bajo</label>
+            <input type="radio" name="np-est" id="npe-M" value="Medio"><label for="npe-M">Medio</label>
+            <input type="radio" name="np-est" id="npe-A" value="Alto"><label for="npe-A">Alto</label>
+          </div>
+        </div>
+        <div class="pac-field"><label>Productos indicados</label><input type="text" id="np-productos" placeholder="Ej: Melena de León 20ml, Ashwagandha Cultivamente"/></div>
+        <div class="pac-btn-row">
+          <button class="pac-btn pac-btn-primary" onclick="guardarNuevoPaciente()">Guardar paciente</button>
+          <button class="pac-btn pac-btn-secondary" onclick="cerrarModalPaciente()">Cancelar</button>
+          <span id="np-status" class="pac-save-status"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ASISTENTE GEMINI -->
+<div id="geminiOverlay">
+  <div id="geminiPanel">
+    <div id="geminiHeader">
+      <h2>Asistente Clínico</h2>
+      <button id="geminiClose" onclick="closeGemini()">✕</button>
+    </div>
+    <div id="geminiBody">
+      <span class="gem-chips-label">¿Cómo querés consultar?</span>
+      <div id="geminiChips"></div>
+      <textarea id="geminiInput" placeholder="Describí el caso del paciente en tus palabras..."></textarea>
+      <button id="geminiSendBtn" onclick="askGemini()">Consultar</button>
+      <div id="geminiResponse">
+        <span class="gem-resp-label">Análisis clínico · Zhen Lab</span>
+        <div id="geminiResponseText"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL ADMIN -->
+<div id="adminOverlay">
+  <div id="adminPanel">
+    <div id="adminHeader">
+      <h2>Panel Admin · Zhen Lab</h2>
+      <button id="adminClose" onclick="closeAdmin()">✕</button>
+    </div>
+    <div id="adminLogin">
+      <p>Ingresá la contraseña de administración</p>
+      <div class="admin-pw-row">
+        <input type="password" id="adminPwInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter')checkPw()"/>
+        <button id="adminPwBtn" onclick="checkPw()">Ingresar</button>
+      </div>
+      <span id="adminPwError">Contraseña incorrecta</span>
+    </div>
+    <div id="adminContent">
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchTab('productos')">Productos</button>
+        <button class="admin-tab" onclick="switchTab('chips')">Chips asistente</button>
+      </div>
+      <div class="admin-tab-content active" id="tab-productos">
+        <div id="adminSearch"><input type="text" id="adminSearchInput" placeholder="Buscar producto para editar..." oninput="renderAdminList()"/></div>
+        <div id="adminList"></div>
+      </div>
+      <div class="admin-tab-content" id="tab-chips">
+        <div id="chipsSection">
+          <div id="chipsList" class="chips-list"></div>
+          <div class="chips-add-row">
+            <input type="text" id="newChipInput" placeholder="Nuevo chip..." onkeydown="if(event.key==='Enter')addChip()"/>
+            <button class="admin-save-btn" onclick="addChip()">+ Agregar</button>
+          </div>
+          <div style="margin-bottom:16px">
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Importar desde .txt (un chip por línea)</div>
+            <input type="file" accept=".txt" onchange="importChips(this)"/>
+          </div>
+          <button class="admin-save-btn" onclick="saveChips()">Guardar chips en Firebase</button>
+          <span id="chipsStatus" class="admin-save-status" style="margin-left:12px;display:inline"></span>
+        </div>
+      </div>
+      <div id="adminLogout">
+        <span class="admin-db-status" id="dbStatus">Firebase conectado</span>
+        <button id="adminLogoutBtn" onclick="adminLogout()">Cerrar sesión</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, collection, getDocs, deleteDoc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBbb1PpfNnMgCuw3WVImJl0DP9_kKpxFXY",
+  authDomain: "zhenlab.firebaseapp.com",
+  projectId: "zhenlab",
+  storageBucket: "zhenlab.firebasestorage.app",
+  messagingSenderId: "619072909016",
+  appId: "1:619072909016:web:51574e539d7173085571ad"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+window._db = db;
+
+async function loadAll(){
+  try {
+    const pSnap = await getDocs(collection(db,"productos"));
+    pSnap.forEach(d=>{
+      const data=d.data(), idx=P.findIndex(p=>p.id===d.id);
+      if(idx>-1){
+        if(data.precio!==undefined)P[idx].precio=data.precio;
+        if(data.indicaciones!==undefined)P[idx].indicaciones=data.indicaciones;
+        if(data.precauciones!==undefined)P[idx].precauciones=data.precauciones;
+        if(data.wsp!==undefined)P[idx].wsp=data.wsp;
+      }
+    });
+    filterProducts();
+    const cSnap = await getDocs(collection(db,"config"));
+    cSnap.forEach(d=>{if(d.id==="chips"&&d.data().lista){window._chips=d.data().lista;renderChips();}});
+    const pacSnap = await getDocs(collection(db,"pacientes"));
+    window._pacientes=[];
+    pacSnap.forEach(d=>window._pacientes.push({fbId:d.id,...d.data()}));
+    renderPacientes();
+    document.getElementById("dbStatus").textContent="Firebase ✓";
+  } catch(e){
+    console.warn("Firebase offline",e);
+    document.getElementById("dbStatus").textContent="Sin conexión Firebase";
+    document.getElementById("dbStatus").classList.add("offline");
+  }
+}
+loadAll();
+
+window.saveToFirebase = async(id,data)=>{ await setDoc(doc(db,"productos",id),data,{merge:true}); };
+window.saveChipsToFirebase = async(lista)=>{ await setDoc(doc(db,"config","chips"),{lista},{merge:false}); };
+window.savePaciente = async(pac)=>{
+  if(pac.fbId){const {fbId,...data}=pac;await updateDoc(doc(db,"pacientes",fbId),data);return fbId;}
+  else{const ref=await addDoc(collection(db,"pacientes"),pac);return ref.id;}
+};
+window.deletePaciente = async(fbId)=>{ await deleteDoc(doc(db,"pacientes",fbId)); };
+</script>
+
+<script>
+const GEMINI_KEY = "AIzaSyDHJDYDYJO4pVDtmbq74YEEfvIiGbmArJE";
+const ADMIN_PW = "Mirtha1810*";
+function normalize(s){return(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g," ")}
+
+const P=[{"id": "c_ashwa", "nombre": "Ashwagandha", "nombreChino": "अश्वगन्धा — Withania somnifera · \"Fuerza de caballo\"", "proveedor": "Cultivamente", "categoria": "Extracto ultraconcentrado", "formato": "Gotero 50ml", "esCapsula": false, "precio": 33900, "horario": "Noche", "horaDetalle": "Tomar de noche, antes de dormir", "tags": ["estres", "sueno", "hormonal", "ansiedad"], "kw": "estres cortisol agotado nervioso ansioso no duermo insomnio cansado sin energia tiroides testosterona hormonal equilibrio nervioso angustia tension burn out burnout agotamiento cronico no puedo dormir me cuesta dormir", "indicaciones": "Estrés crónico, cortisol elevado, tiroides, testosterona, sueño profundo, ansiedad, agotamiento nervioso", "precauciones": "Contraindicado en embarazo. Precaución en hipertiroidismo. Puede potenciar sedantes.", "dosis_tipo": "peso", "wsp": "🌿 *Ashwagandha (Withania somnifera)*\n_अश्वगन्धा — \"Fuerza de caballo\" · Medicina ayurvédica_\n\nRaíz sagrada utilizada por más de 3.000 años en la medicina ayurvédica de la India. Su nombre significa literalmente \"fuerza de caballo\", haciendo referencia a la vitalidad que transmite. Era prescripta por los vaidyas (médicos ayurvédicos) para restaurar el sistema nervioso exhausto, fortalecer el organismo en estados de agotamiento profundo y equilibrar el eje hormonal.\n\n*¿Cómo actúan los adaptógenos?*\nLos adaptógenos ayudan al cuerpo a adaptarse al estrés y recuperar el equilibrio de forma progresiva, regulando distintos sistemas en lugar de generar un efecto inmediato. No estimulan ni sedan: regulan.\n\n*Diferencia con suplementos tradicionales:*\nA diferencia de los ansiolíticos convencionales, la Ashwagandha no genera dependencia. Trabaja sobre el eje HHA (hipotálamo-hipófisis-adrenal), reduciendo el cortisol de forma fisiológica.\n\n---\n\n*Dosificación:*\nLa cantidad de gotas se calcula de forma personalizada según el peso corporal:\n➡️ _Peso (kg) ÷ 2 = cantidad de gotas por toma_\n\n*Modo de uso:*\n• Tomar de *noche*, antes de dormir\n• Es una tintura en alcohol comestible de cereal\n• Diluir en un vaso de agua fría o templada (evitar agua caliente)\n\n*Propiedades principales:*\n• Reducción del cortisol y la respuesta crónica al estrés\n• Mejora significativa de la calidad del sueño profundo\n• Soporte tiroideo y equilibrio hormonal\n• Aumento de testosterona y vitalidad masculina\n• Reducción de la ansiedad, la rumiación y el agotamiento nervioso\n• Efecto neuroprotector y antiinflamatorio suave\n\n⏱️ *Constancia y paciencia:* sus efectos son progresivos. Los primeros cambios suelen notarse entre la 2ª y 4ª semana.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "c_reishi", "nombre": "Reishi", "nombreChino": "靈芝 — Líng Zhī · \"Hongo del espíritu\" · Ganoderma lucidum", "proveedor": "Cultivamente", "categoria": "Extracto ultraconcentrado", "formato": "Gotero 50ml", "esCapsula": false, "precio": 29900, "horario": "Tarde", "horaDetalle": "Tomar por la tarde", "tags": ["estres", "sueno", "inmunidad", "oncologia", "cardiovascular", "ansiedad"], "kw": "sistema inmune defensas cancer tumor oncologia estres nervioso tension no duermo presion alta hipertension corazon cardiovascular ansiedad angustia cansado paz calma serenidad tranquilidad insomnio", "indicaciones": "Inmunomodulador profundo, sistema nervioso, estrés crónico, oncología complementaria, hipertensión", "precauciones": "Potencia anticoagulantes. Precaución en cirugías programadas. No combinar con inmunosupresores.", "dosis_tipo": "peso", "wsp": "🌿 *Reishi (Ganoderma lucidum)*\n_靈芝 — Líng Zhī · \"Hongo del espíritu\" · Medicina tradicional china_\n\nConocido como el *\"Hongo de la Inmortalidad\"* en la medicina tradicional china, el Reishi fue reservado durante siglos exclusivamente para emperadores, altos mandatarios y monjes taoístas. Su nombre en chino, 靈芝 (Líng Zhī), se traduce como \"hongo del espíritu\" o \"hongo de la esencia divina\".\n\nEn los textos clásicos de la materia médica china (Bencao Gangmu), era clasificado como el más alto de los tónicos: superior al ginseng, fuente de longevidad y equilibrio espiritual.\n\n*¿Cómo actúan los adaptógenos?*\nLos adaptógenos ayudan al cuerpo a adaptarse al estrés y recuperar el equilibrio de forma progresiva.\n\n---\n\n*Dosificación:*\nLa cantidad de gotas se calcula de forma personalizada según el peso corporal:\n➡️ _Peso (kg) ÷ 2 = cantidad de gotas por toma_\n\n*Modo de uso:*\n• Tomar por la *tarde*\n• Es una tintura en alcohol comestible de cereal\n• Diluir en un vaso de agua fría o templada\n\n*Propiedades principales:*\n• Inmunomodulación profunda (betaglucanos, triterpenoides)\n• Regulación del sistema nervioso central y reducción del estrés\n• Soporte cardiovascular y regulación de presión arterial\n• Actividad antiinflamatoria y antioxidante sistémica\n• Apoyo en procesos oncológicos complementarios\n• Efecto ansiolítico suave y regulador del sueño\n\n⏱️ *Constancia y paciencia:* sus efectos son progresivos.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "c_melena", "nombre": "Melena de León", "nombreChino": "猴頭菇 — Hóu Tóu Gū · \"Hongo cabeza de mono\" · Hericium erinaceus", "proveedor": "Cultivamente", "categoria": "Extracto ultraconcentrado", "formato": "Gotero 50ml", "esCapsula": false, "precio": 29900, "horario": "Mañana en ayunas", "horaDetalle": "Tomar de mañana, en ayunas", "tags": ["memoria", "energia", "digestivo"], "kw": "memoria concentracion foco enfoque olvido me olvido las cosas no me concentro niebla mental cerebro cognitivo alzheimer demencia nervio vago digestion gastritis ulcera mucosa gastrica estomago claridad mental tdah deficit atencion ansiedad rumiacion", "indicaciones": "Memoria, concentración, NGF (factor de crecimiento nervioso), neuroprotección, nervio vago, mucosa gástrica", "precauciones": "Sin contraindicaciones significativas. Precaución en alergia a hongos.", "dosis_tipo": "peso", "wsp": "🌿 *Melena de León (Hericium erinaceus)*\n_猴頭菇 — Hóu Tóu Gū · \"Hongo cabeza de mono\" · Medicina tradicional china y japonesa_\n\nUsado desde hace siglos en la medicina tradicional china y japonesa, este hongo era reservado para monjes budistas y practicantes taoístas que buscaban claridad mental, concentración profunda y equilibrio interno. En la farmacopea china clásica se lo clasificaba como tónico del estómago y del espíritu (Shén).\n\nLo que la ciencia moderna descubrió es extraordinario: la Melena de León contiene compuestos únicos llamados *hericenonas y erinacinas* que estimulan la producción del *NGF (factor de crecimiento nervioso)*, promoviendo la regeneración de neuronas y la mielinización axonal.\n\n*¿Cómo actúan los adaptógenos?*\nLos adaptógenos ayudan al cuerpo a adaptarse al estrés y recuperar el equilibrio de forma progresiva, regulando distintos sistemas en lugar de generar un efecto inmediato.\n\n*Diferencia con suplementos tradicionales:*\nA diferencia de los estimulantes cognitivos convencionales, la Melena de León no genera tolerancia ni estimula el sistema nervioso simpático. Sus efectos son acumulativos.\n\n---\n\n*Dosificación:*\nLa cantidad de gotas se calcula de forma personalizada según el peso corporal:\n➡️ _Peso (kg) ÷ 2 = cantidad de gotas por toma_\n\n*Modo de uso:*\n• Tomar por la *mañana, en ayunas*, para una mejor absorción\n• Es una tintura en alcohol comestible de cereal\n• Diluir la dosis en un vaso de agua fría o templada (evitar agua caliente para no evaporar el alcohol y preservar sus propiedades)\n\n*Propiedades principales:*\n• Apoyo a la función cognitiva (memoria, enfoque y claridad mental)\n• Regeneración neuronal: estimula el NGF – factor de crecimiento nervioso\n• Reducción de la ansiedad y la rumiación mental\n• Mejora del estado de ánimo y equilibrio del sistema nervioso\n• Soporte digestivo: protección y regeneración de la mucosa gástrica\n• Estimulación del nervio vago (conexión intestino-cerebro)\n\n⏱️ *Constancia y paciencia:* al ser un adaptógeno, sus efectos son progresivos. Se recomienda acompañar con una alimentación equilibrada para poder percibir mejor los cambios.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "c_cordyceps", "nombre": "Cordyceps", "nombreChino": "冬蟲夏草 — Dōng Chóng Xià Cǎo · \"Gusano de invierno, hierba de verano\"", "proveedor": "Cultivamente", "categoria": "Extracto ultraconcentrado", "formato": "Gotero 50ml", "esCapsula": false, "precio": 29900, "horario": "Mañana en ayunas", "horaDetalle": "Tomar de mañana, en ayunas", "tags": ["energia", "libido", "hormonal"], "kw": "energia vitalidad cansancio fatiga cronica rendimiento deportivo fisico atletismo sexual libido potencia testosterona adrenales suprarrenales sin fuerza sin ganas agotado me canso rapido resistencia stamina", "indicaciones": "Energía, rendimiento físico y sexual, función adrenal y suprarrenal, fatiga crónica, libido", "precauciones": "Precaución en enfermedades autoinmunes. No usar de noche (puede generar insomnio). Precaución con anticoagulantes.", "dosis_tipo": "peso", "wsp": "🌿 *Cordyceps (Cordyceps sinensis / militaris)*\n_冬蟲夏草 — Dōng Chóng Xià Cǎo · \"Gusano de invierno, hierba de verano\"_\n\nUno de los hongos más extraordinarios y valiosos de la farmacopea china. Su nombre describe su naturaleza paradójica: crece como parásito sobre orugas en los altiplanos del Tíbet y las montañas de Sichuan, transformándose de animal en vegetal según la estación. Durante siglos fue tan codiciado que su precio superaba al del oro, reservado exclusivamente para la nobleza imperial china.\n\nLos pastores tibetanos notaron que sus yaks que pastaban en zonas donde crecía el Cordyceps tenían mayor resistencia, energía y vitalidad. Fue así como se incorporó a la medicina tradicional tibetana como el gran tónico del *Qi* (energía vital).\n\n---\n\n*Dosificación:*\nLa cantidad de gotas se calcula de forma personalizada según el peso corporal:\n➡️ _Peso (kg) ÷ 2 = cantidad de gotas por toma_\n\n*Modo de uso:*\n• Tomar por la *mañana, en ayunas*, para mejor absorción\n• Es una tintura en alcohol comestible de cereal\n• Diluir en un vaso de agua fría o templada\n\n*Propiedades principales:*\n• Aumento de energía, resistencia física y reducción de fatiga\n• Optimización de la producción de ATP y oxigenación celular\n• Soporte de la función adrenal y suprarrenal\n• Mejora del rendimiento sexual y libido (ambos sexos)\n• Reducción de la fatiga crónica\n• Soporte en rendimiento deportivo (VO2 máximo)\n\n⏱️ *Constancia y paciencia:* no usar de noche: puede generar insomnio por su efecto energizante.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "c_blend", "nombre": "Blend Cúrcuma · Pimienta · Jengibre · Rhodiola", "nombreChino": "薑黃混合 — Blend antiinflamatorio · Curcuma + Rhodiola rosea", "proveedor": "Cultivamente", "categoria": "Extracto ultraconcentrado", "formato": "Gotero 50ml", "esCapsula": false, "precio": 29900, "horario": "Con las comidas", "horaDetalle": "Tomar con las comidas principales", "tags": ["inflamacion", "digestivo", "estres", "energia"], "kw": "inflamacion inflamado dolor articulaciones artritis reumatoide rodilla columna espalda digestion higado antioxidante estres oxidativo fatiga mental antiinflamatorio curcuma jengibre rhodiola metabolismo", "indicaciones": "Antiinflamatorio sistémico, antioxidante, soporte hepático, digestivo, estrés oxidativo, fatiga mental", "precauciones": "Precaución con anticoagulantes (cúrcuma). Puede interactuar con hipoglucemiantes. Evitar en cálculos biliares.", "dosis_tipo": "peso", "wsp": "🌿 *Blend Cúrcuma · Pimienta Negra · Jengibre · Rhodiola*\n_Curcuma longa · Piper nigrum · Zingiber officinale · Rhodiola rosea_\n\nUna fusión sinérgica única que combina el poder antiinflamatorio de las tres especias sagradas de la medicina ayurvédica y china con el efecto adaptógeno de la Rhodiola. La cúrcuma y el jengibre llevan más de 4.000 años de uso medicinal documentado en Asia. La pimienta negra potencia la absorción de la curcumina hasta 20 veces gracias a la piperina.\n\n---\n\n*Dosificación:*\nLa cantidad de gotas se calcula de forma personalizada según el peso corporal:\n➡️ _Peso (kg) ÷ 2 = cantidad de gotas por toma_\n\n*Modo de uso:*\n• Tomar con las *comidas principales*\n• Es una tintura en alcohol comestible de cereal\n• Diluir en un vaso de agua fría o templada\n\n*Propiedades principales:*\n• Antiinflamatorio sistémico potente (curcumina + piperina + gingeroles)\n• Antioxidante y soporte hepático\n• Mejora digestiva, carminativa y gastroprotectora (jengibre)\n• Reducción de fatiga mental y estrés oxidativo (Rhodiola)\n• Soporte articular: artritis, artrosis, dolor crónico\n• Soporte metabólico y regulación glucémica\n\n⏱️ *Constancia y paciencia:* sus efectos son progresivos y acumulativos.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_rei_mel", "nombre": "Fusión Reishi + Melena de León", "nombreChino": "靈芝 + 猴頭菇 — Líng Zhī + Hóu Tóu Gū", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Tarde", "horaDetalle": "4 gotas cada 6-8 horas, tarde", "tags": ["memoria", "estres", "sueno", "inmunidad", "ansiedad"], "kw": "estres ansiedad memoria concentracion nervioso no duermo sistema nervioso agotamiento mental cognitivo enfoque calma claridad niebla mental rumiacion burnout burn out", "indicaciones": "Estrés con niebla mental, agotamiento nervioso con deterioro cognitivo, ansiedad con falta de foco", "composicion": "Reishi + Melena de León", "precauciones": "Precaución con anticoagulantes (Reishi). Alergia a hongos: consultar.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Reishi + Melena de León*\n_靈芝 Líng Zhī · 猴頭菇 Hóu Tóu Gū_\n\nDos de los hongos más venerados de la medicina tradicional china, combinados en una sola fusión. El Reishi, \"hongo del espíritu\", aporta calma profunda y equilibrio del sistema nervioso. La Melena de León, tónico del cerebro y el estómago en la farmacopea china, estimula la regeneración neuronal y la claridad mental.\n\nJuntos trabajan en sinergia perfecta: el Reishi baja el ruido interno y el sistema nervioso hiperactivo; la Melena de León reconstruye desde adentro la capacidad cognitiva.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas, preferentemente de tarde\n• Sublingual: mantener 20-30 segundos en boca antes de tragar\n• O diluido en agua fría o templada\n\n*Para quién es ideal:*\nPacientes con estrés crónico que sienten que \"la cabeza no les funciona\", que olvidan cosas, tienen dificultad para concentrarse o sienten niebla mental.\n\n*Propiedades principales:*\n• Reducción del estrés y la ansiedad (Reishi)\n• Estimulación del NGF y regeneración neuronal (Melena)\n• Mejora de memoria, enfoque y claridad mental\n• Regulación del sistema nervioso central\n• Soporte de la mucosa gástrica y el nervio vago\n\n⏱️ Efectos progresivos y acumulativos. Se recomienda uso continuo mínimo 4-6 semanas.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_rei_ash", "nombre": "Fusión Reishi + Ashwagandha", "nombreChino": "靈芝 + अश्वगन्धा — Líng Zhī + Ashwagandha", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Tarde/Noche", "horaDetalle": "4 gotas, tarde-noche", "tags": ["estres", "sueno", "inmunidad", "ansiedad", "hormonal"], "kw": "estres cronico cortisol no duermo insomnio agotamiento nervioso ansiedad angustia tension hormonal defensas burn out burnout", "indicaciones": "Estrés crónico con insomnio, cortisol elevado, agotamiento nervioso, ansiedad con fatiga", "composicion": "Reishi + Ashwagandha", "precauciones": "Ashwagandha contraindicada en embarazo e hipertiroidismo. Reishi: precaución con anticoagulantes.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Reishi + Ashwagandha*\n_靈芝 Líng Zhī · अश्वगन्धा Withania somnifera_\n\nLa unión entre la medicina tradicional china y la medicina ayurvédica de la India. El Reishi aporta modulación inmune y calma sistémica; la Ashwagandha reduce el cortisol y restaura el sistema nervioso agotado.\n\nUna combinación especialmente indicada para el estrés crónico moderno: el que no te deja dormir, te mantiene alerta sin motivo y te hace sentir siempre \"al límite\".\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas, preferentemente tarde o noche\n• Sublingual: mantener 20-30 segundos en boca\n\n*Propiedades principales:*\n• Reducción del cortisol y la respuesta al estrés (Ashwagandha)\n• Inmunomodulación y regulación sistémica (Reishi)\n• Mejora de la calidad del sueño\n• Reducción de la ansiedad y el agotamiento nervioso\n• Soporte hormonal y tiroideo\n\n⏱️ Efectos progresivos. Primeros cambios entre la 2ª y 4ª semana.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_ash_mel", "nombre": "Fusión Ashwagandha + Melena de León", "nombreChino": "अश्वगन्धा + 猴頭菇 — Ashwagandha + Hóu Tóu Gū", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Mañana/Tarde", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["memoria", "estres", "ansiedad", "energia"], "kw": "estres ansiedad memoria foco cognitivo mental tdah concentracion olvido nervioso agotado burn out burnout rendimiento intelectual estudio trabajo profesional niebla mental", "indicaciones": "Estrés con deterioro cognitivo, ansiedad que afecta la concentración, agotamiento intelectual, TDAH adulto", "composicion": "Ashwagandha + Melena de León", "precauciones": "Ashwagandha contraindicada en embarazo e hipertiroidismo.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Ashwagandha + Melena de León*\n_अश्वगन्धा Withania somnifera · 猴頭菇 Hóu Tóu Gū_\n\nPara la mente que no para pero tampoco puede concentrarse. La Ashwagandha baja el volumen del estrés y el cortisol; la Melena de León reconstruye la capacidad de enfoque y memoria desde la raíz neurológica.\n\nUna combinación ideal para profesionales, estudiantes y personas que sienten que el estrés les \"quemó\" la cabeza.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Reducción del cortisol y la ansiedad (Ashwagandha)\n• Estimulación del NGF, memoria y foco (Melena de León)\n• Neuroprotección y regeneración neuronal\n• Equilibrio del sistema nervioso central\n• Soporte del nervio vago\n\n⏱️ Efectos progresivos. Recomendado uso continuo mínimo 6-8 semanas.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_cor_rei_mel", "nombre": "Fusión Cordyceps + Reishi + Melena de León", "nombreChino": "冬蟲夏草 + 靈芝 + 猴頭菇 — Trinidad de hongos sagrados", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Mañana", "horaDetalle": "4 gotas de mañana en ayunas", "tags": ["energia", "memoria", "inmunidad", "estres"], "kw": "energia vitalidad cansancio fatiga memoria concentracion rendimiento fisico mental deportivo cognitivo sin fuerza agotado cerebro hongos fatiga cronica integral triple", "indicaciones": "Fatiga crónica con niebla mental, bajo rendimiento físico y cognitivo simultáneo, agotamiento integral", "composicion": "Cordyceps + Reishi + Melena de León", "precauciones": "No usar de noche (Cordyceps genera insomnio). Precaución con anticoagulantes (Reishi).", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Cordyceps + Reishi + Melena de León*\n_冬蟲夏草 · 靈芝 · 猴頭菇_\n\nLa trinidad de los hongos más poderosos de la medicina tradicional china. Cordyceps aporta energía celular y vitalidad física; Reishi equilibra el sistema nervioso y modula la inmunidad; Melena de León reconstruye la función cognitiva y protege las neuronas.\n\nTres hongos que se complementan perfectamente para restaurar el organismo en todos sus niveles: cuerpo, mente y sistema nervioso.\n\n*Modo de uso:*\n• 4 gotas de mañana, en ayunas si es posible\n• Sublingual: mantener 20-30 segundos en boca\n\n*Para quién es ideal:*\nPacientes con agotamiento crónico que sienten que no tienen energía para el cuerpo ni claridad para la mente.\n\n*Propiedades principales:*\n• Energía física y reducción de fatiga (Cordyceps)\n• Regulación nerviosa e inmune (Reishi)\n• Claridad mental, memoria y NGF (Melena de León)\n• Sinergia inmunomoduladora profunda\n• Antioxidante y neuroprotector\n\n⏱️ Efectos progresivos. No usar de noche por el Cordyceps.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_rho_ash", "nombre": "Fusión Rhodiola + Ashwagandha", "nombreChino": "红景天 + अश्वगन्धा — Hóng Jǐng Tiān + Ashwagandha", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Mañana/Tarde", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["estres", "energia", "ansiedad", "sueno"], "kw": "estres fatiga mental depresion leve tristeza agotamiento cognitivo rendimiento cortisol ansiedad angustia nervioso energia mental claridad burn out burnout adrenales suprarrenales agotamiento adrenal", "indicaciones": "Fatiga mental severa, estrés crónico con depresión leve, agotamiento adrenal, rendimiento cognitivo bajo", "composicion": "Rhodiola Rosea + Ashwagandha", "precauciones": "Ashwagandha contraindicada en embarazo e hipertiroidismo. Rhodiola: precaución en trastorno bipolar.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Rhodiola + Ashwagandha*\n_红景天 Hóng Jǐng Tiān · अश्वगन्धा Withania somnifera_\n\nLa Rhodiola Rosea, llamada \"raíz de oro\" en Siberia, fue usada durante siglos por los vikingos, los guerreros cosacos y la medicina tibetana para aumentar la resistencia física y mental en condiciones extremas. La Ashwagandha, pilar del ayurveda, regula el eje cortisol y restaura el sistema nervioso agotado.\n\nJuntas forman una de las combinaciones más potentes contra el agotamiento moderno: funcionan como un \"reset\" para las glándulas adrenales y el sistema nervioso central.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Reducción de la fatiga mental y física severa\n• Modulación del cortisol y el eje HHA\n• Mejora del estado de ánimo y reducción de depresión leve\n• Aumento de la resistencia al estrés\n• Neuroprotección y mejora cognitiva\n\n⏱️ Efectos progresivos. Primeros cambios entre la 2ª y 3ª semana.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_cha_col_mai", "nombre": "Fusión Chaga + Cola de Pavo + Maitake", "nombreChino": "白樺茸 + 雲芝 + 舞茸 — Tríada oncológica e inmunológica", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Mañana", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["inmunidad", "oncologia", "glucemia", "higado"], "kw": "cancer tumor oncologia defensas sistema inmune glucemia diabetes colesterol antitumoral antioxidante microbiota intestinal psk psp betaglucanos", "indicaciones": "Soporte oncológico complementario, inmunomodulación profunda, glucemia, microbiota, antioxidante extremo", "composicion": "Chaga + Cola de Pavo + Maitake", "precauciones": "Precaución con inmunosupresores. Consultar médico en tratamientos oncológicos activos. Chaga: precaución con anticoagulantes.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Chaga + Cola de Pavo + Maitake*\n_白樺茸 · 雲芝 Yún Zhī · 舞茸_\n\nTres de los hongos con mayor evidencia científica en oncología complementaria e inmunomodulación.\n\nEl Chaga, llamado \"diamante del bosque\" en Siberia, tiene el mayor ORAC (capacidad antioxidante) de cualquier alimento conocido. La Cola de Pavo (PSK/PSP) es el único hongo aprobado como complemento oncológico en Japón. El Maitake (fracción D) tiene actividad antitumoral y antidiabética documentada.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Inmunomodulación profunda y sostenida\n• Actividad antitumoral complementaria (PSK, betaglucanos, fracción D)\n• Antioxidante extremo (Chaga - mayor ORAC conocido)\n• Regulación de glucemia y colesterol (Maitake)\n• Soporte de la microbiota intestinal\n• Hepatoprotector\n\n⏱️ Efectos progresivos. Especialmente valioso en tratamientos prolongados.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_rei_shi_mai", "nombre": "Fusión Reishi + Shiitake + Maitake", "nombreChino": "靈芝 + 椎茸 + 舞茸 — Xiāng Gū · Tríada cardiovascular", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Flexible", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["inmunidad", "cardiovascular", "glucemia", "oncologia"], "kw": "colesterol cardiovascular presion alta hipertension defensas inmunidad glucemia diabetes corazon sistema inmune antiviral eritadenina lovastatina", "indicaciones": "Soporte cardiovascular, colesterol, glucemia, inmunomodulación, antiviral, hipertensión", "composicion": "Reishi + Shiitake + Maitake", "precauciones": "Reishi potencia anticoagulantes. Precaución en cirugías programadas.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Reishi + Shiitake + Maitake*\n_靈芝 · 椎茸 Xiāng Gū · 舞茸_\n\nUna fusión para el sistema cardiovascular e inmunológico. El Reishi regula la presión arterial y modula el sistema nervioso; el Shiitake aporta eritadenina para bajar el colesterol LDL y lentinan para la inmunidad; el Maitake regula la glucemia y aporta la fracción D inmunoestimulante.\n\nEn la medicina tradicional china, estos tres hongos han sido utilizados juntos durante siglos para fortalecer el Qi del corazón y el sistema defensivo (Wei Qi).\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Regulación cardiovascular y presión arterial (Reishi)\n• Reducción de colesterol LDL (Shiitake - eritadenina natural)\n• Regulación glucémica (Maitake - fracción D)\n• Inmunomodulación y actividad antiviral\n• Antioxidante sistémico\n\n⏱️ Efectos progresivos y acumulativos.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_rei_rho_ash", "nombre": "Fusión Reishi + Rhodiola + Ashwagandha", "nombreChino": "靈芝 + 红景天 + अश्वगन्धा — Triple adaptógeno · Burnout", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Tarde", "horaDetalle": "4 gotas cada 6-8 horas, tarde", "tags": ["estres", "sueno", "inmunidad", "ansiedad", "energia"], "kw": "estres cronico agotamiento total burn out burnout fatiga nerviosa ansiedad insomnio sin energia sin fuerza apagado sin motivacion depresion leve agotamiento adrenal sistema nervioso", "indicaciones": "Agotamiento crónico total, burnout, estrés con fatiga y ansiedad simultáneos", "composicion": "Reishi + Rhodiola Rosea + Ashwagandha", "precauciones": "Ashwagandha: contraindicada en embarazo e hipertiroidismo. Reishi: precaución anticoagulantes. Rhodiola: precaución en bipolar.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Reishi + Rhodiola + Ashwagandha*\n_靈芝 · 红景天 · अश्वगन्धा_\n\nLa fusión triple para el agotamiento crónico profundo. Tres adaptógenos de tradiciones distintas (china, siberiana y ayurvédica) que convergen en el mismo objetivo: restaurar el organismo exhausto.\n\nIdeal para el \"burnout\" moderno: esa sensación de estar vacío por dentro, sin energía ni motivación, con el sistema nervioso en llamas y el sistema inmune debilitado.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Inmunomodulación y regulación nerviosa (Reishi)\n• Reducción de fatiga mental y mejora del estado de ánimo (Rhodiola)\n• Reducción del cortisol y restauración adrenal (Ashwagandha)\n• Triple acción adaptógena sinérgica\n• Mejora del sueño y la calidad de recuperación\n\n⏱️ Efectos progresivos. Ideal para tratamientos de 2-3 meses.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_vit_sch_ash", "nombre": "Fusión Vitex + Schizandra + Ashwagandha", "nombreChino": "五味子 Wǔ Wèi Zǐ + Vitex + अश्वगन्धा — Hormonal femenino", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Mañana", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["hormonal", "menopausia", "estres"], "kw": "hormonal femenino spm premenstrual ciclo irregular menopausia perimenopausia sofoco prolactina ovario cortisol equilibrio hormonal estrogeno progesterona hipotiroidismo mujer prolactina elevada", "indicaciones": "Equilibrio hormonal femenino, SPM, ciclo irregular, perimenopausia, prolactina elevada", "composicion": "Vitex Agnus Castus + Schizandra + Ashwagandha", "precauciones": "Vitex contraindicado en embarazo y lactancia. No combinar con anticonceptivos hormonales sin consulta.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Vitex + Schizandra + Ashwagandha*\n_Vitex agnus-castus · 五味子 Wǔ Wèi Zǐ · अश्वगन्धा_\n\nUna fusión diseñada específicamente para el equilibrio hormonal femenino. La Schizandra (五味子, \"fruta de los cinco sabores\") es uno de los tónicos más completos de la farmacopea china: es la única planta que contiene los cinco sabores, lo que en MTC indica que nutre los cinco órganos vitales.\n\nEl Vitex ha sido usado en la medicina occidental desde la Antigua Grecia para regular el ciclo menstrual. La Ashwagandha reduce el cortisol que interfiere con la progesterona.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Para quién es ideal:*\nMujeres con ciclo irregular, SPM intenso, síntomas de perimenopausia, prolactina elevada o estrés crónico que afecta el sistema hormonal.\n\n*Propiedades principales:*\n• Regulación del ciclo menstrual y la prolactina (Vitex)\n• Soporte hepático y tónico hormonal integral (Schizandra)\n• Reducción del cortisol hormono-disruptor (Ashwagandha)\n• Reducción de SPM: irritabilidad, retención, dismenorrea\n• Soporte en perimenopausia y menopausia temprana\n\n⏱️ El Vitex necesita al menos 3 ciclos menstruales para mostrar su máximo efecto.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_tul_vit_neem", "nombre": "Fusión Tulsi + Vitex + Neem", "nombreChino": "तुलसी Tulasī + Vitex + Nimba — Tríada ayurvédica femenina", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Mañana", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["hormonal", "menopausia", "inmunidad", "estres"], "kw": "hormonal femenino ciclo menstrual irregular spm premenstrual ansiedad estres inmunidad glucemia purificante antimicrobiano candida candidiasis", "indicaciones": "Equilibrio hormonal femenino, inmunidad, ansiedad hormono-dependiente, candidiasis recurrente", "composicion": "Tulsi (Albahaca Sagrada) + Vitex Agnus Castus + Neem", "precauciones": "Neem y Vitex contraindicados en embarazo y lactancia.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Tulsi + Vitex + Neem*\n_तुलसी Tulasī · Vitex agnus-castus · Nimba_\n\nTríada de la medicina ayurvédica para la salud femenina integral. El Tulsi (Albahaca Sagrada) es considerado la planta más sagrada de la India. El Neem, llamado \"sarva roga nivarini\" en sánscrito (\"la que cura todas las enfermedades\"), purifica la sangre y el sistema inmune. El Vitex regula el eje hormonal femenino.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Regulación hormonal femenina y ciclo menstrual (Vitex)\n• Adaptógeno y ansiolítico suave (Tulsi)\n• Inmunomodulación, antifúngico y purificante (Neem)\n• Soporte glucémico\n• Equilibrio del sistema nervioso hormono-dependiente\n\n⏱️ Vitex necesita mínimo 3 ciclos para máximo efecto.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_enfoque", "nombre": "Fusión Enfoque", "nombreChino": "專注 — Zhuān Zhù · Concentración plena", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Mañana", "horaDetalle": "4 gotas de mañana", "tags": ["memoria", "energia", "estres"], "kw": "memoria concentracion foco enfoque estudio trabajo rendimiento cognitivo mental intelectual tdah deficit atencion olvido fatiga mental cerebro claridad niebla mental productividad ginkgo bacopa", "indicaciones": "Concentración, memoria, rendimiento cognitivo, TDAH adulto, fatiga mental, productividad", "composicion": "Maca + Ginkgo Biloba + Bacopa Monnieri + Ginseng Siberiano + Rhodiola Rosea", "precauciones": "Ginkgo: precaución con anticoagulantes. Evitar de noche.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Enfoque*\n_Maca · Ginkgo Biloba · Bacopa Monnieri · Ginseng Siberiano · Rhodiola Rosea_\n\nCinco plantas de cinco tradiciones medicinales distintas (andina, china, ayurvédica, siberiana y escandinava), unidas en una sola fusión con un objetivo: potenciar la función cognitiva al máximo nivel.\n\nEl Ginkgo Biloba, con más de 200 millones de años de antigüedad, es la planta viva más antigua del planeta. En la medicina china se usa para \"abrir los orificios de la mente\". La Bacopa es el nootrópico ayurvédico por excelencia: mejora la memoria a largo plazo y reduce la ansiedad que interfiere con la concentración.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas, preferentemente de mañana\n• Sublingual: mantener 20-30 segundos en boca\n\n*Propiedades principales:*\n• Mejora de concentración y memoria de trabajo\n• Aumento del flujo sanguíneo cerebral (Ginkgo)\n• Reducción de fatiga mental y estrés (Rhodiola + Ginseng)\n• Neuroprotección a largo plazo (Bacopa)\n• Energía y equilibrio hormonal (Maca)\n\n⏱️ La Bacopa muestra sus mejores efectos a partir de las 8-12 semanas de uso continuo.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_ayurveda", "nombre": "Fusión Ayurveda", "nombreChino": "आयुर्वेद — Āyurveda · Ciencia de la vida", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Flexible", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["estres", "inmunidad", "digestivo", "ansiedad"], "kw": "estres nervioso ansioso ansiedad angustia defensas sistema inmune equilibrio nervioso energia agotamiento purificante glucemia infecciones ayurveda tulsi neem ashwagandha", "indicaciones": "Estrés, equilibrio nervioso, inmunidad, ansiedad, agotamiento, purificación general", "composicion": "Tulsi (Albahaca Sagrada) + Neem + Ashwagandha", "precauciones": "Contraindicado en embarazo. Precaución en hipertiroidismo (Ashwagandha).", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Ayurveda*\n_तुलसी Tulasī · Nimba · अश्वगन्धा Ashwagandha_\n\nLos tres pilares de la medicina ayurvédica reunidos en una sola fusión. Juntos representan la esencia del Āyurveda (आयुर्वेद): ciencia de la vida.\n\nEl Tulsi es la planta más sagrada de la India. El Neem es llamado \"sarva roga nivarini\" en sánscrito: \"la que cura todas las enfermedades\". La Ashwagandha es el gran restaurador del Ojas (vitalidad esencial).\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Adaptógeno profundo y regulador nervioso (Ashwagandha)\n• Equilibrio inmune y purificante sistémico (Neem)\n• Ansiolítico suave y antiestrés (Tulsi)\n• Soporte metabólico y glucémico\n• Regulación sistémica e integral de la vitalidad\n\n⏱️ Efectos progresivos. Ideal como tónico de base a largo plazo.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_hormonal", "nombre": "Fusión Reparación Hormonal", "nombreChino": "五味子 — Wǔ Wèi Zǐ · Schizandra · Equilibrio femenino", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Flexible", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["hormonal", "menopausia", "estres"], "kw": "hormonal femenino spm premenstrual ciclo irregular menopausia perimenopausia sofoco prolactina ovario cortisol equilibrio hormonal estrogeno progesterona mujer vitex schizandra ashwagandha", "indicaciones": "Equilibrio hormonal femenino, SPM, ciclo irregular, perimenopausia, prolactina elevada", "composicion": "Ashwagandha + Schizandra + Vitex Agnus Castus", "precauciones": "Vitex contraindicado en embarazo y lactancia. No combinar con anticonceptivos hormonales.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Reparación Hormonal*\n_अश्वगन्धा · 五味子 Wǔ Wèi Zǐ (Schizandra) · Vitex agnus-castus_\n\nLa Schizandra (五味子, \"fruta de los cinco sabores\") es uno de los tónicos más completos de la farmacopea china: es la única planta que contiene los cinco sabores, lo que en MTC indica que nutre los cinco órganos vitales. Es especialmente apreciada para la salud femenina, la piel y el hígado.\n\nEl Vitex ha sido usado en la medicina occidental desde la Antigua Grecia para regular el ciclo menstrual. La Ashwagandha reduce el cortisol que interfiere con la progesterona.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Regulación del ciclo menstrual y la prolactina (Vitex)\n• Soporte hepático y tónico hormonal integral (Schizandra)\n• Reducción del cortisol hormono-disruptor (Ashwagandha)\n• Reducción de SPM, irritabilidad premenstrual y dismenorrea\n• Soporte en perimenopausia y menopausia temprana\n\n⏱️ El Vitex necesita mínimo 3 ciclos menstruales para su máximo efecto.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_fungi", "nombre": "Fusión Fungi-Ormus", "nombreChino": "七靈菌 — Qī Líng Jūn · Los siete hongos sagrados", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Mañana", "horaDetalle": "4 gotas de mañana", "tags": ["inmunidad", "oncologia", "energia", "memoria"], "kw": "cancer tumor oncologia defensas sistema inmune maxima inmunidad hongos adaptogenos energia cerebro neuroproteccion antioxidante extremo siete hongos ormus fungi", "indicaciones": "Inmunidad máxima, neuroprotección, oncología complementaria, energía, defensas", "composicion": "7 hongos: Melena de León + Reishi + Chaga + Maitake + Shiitake + Cordyceps + Cola de Pavo + Ormus Marino", "precauciones": "Precaución con anticoagulantes. No combinar con inmunosupresores sin supervisión médica.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Fungi-Ormus*\n_七靈菌 — Los Siete Hongos Sagrados_\n\nLa fusión más completa y poderosa del catálogo. Siete de los hongos medicinales más estudiados del mundo, combinados con Ormus marino para una sinergia inmunomoduladora sin igual. Cada uno de estos hongos tiene siglos o milenios de uso medicinal documentado en las tradiciones china, japonesa, tibetana y siberiana.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas, de mañana\n• Sublingual: mantener 20-30 segundos en boca\n\n*Propiedades principales:*\n• Inmunomodulación profunda y multidimensional\n• Neuroprotección y claridad mental (Melena de León - NGF)\n• Regulación del sistema nervioso (Reishi - 靈芝)\n• Antioxidante extremo (Chaga - mayor ORAC conocido)\n• Actividad antitumoral complementaria (Maitake fracción D, Cola de Pavo PSK/PSP)\n• Energía y rendimiento (Cordyceps - 冬蟲夏草)\n• Mineralización y conductividad celular (Ormus)\n\n⏱️ Efectos progresivos y acumulativos. Especialmente valioso en tratamientos prolongados.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_hepatica", "nombre": "Fusión Calma Hepática", "nombreChino": "護肝 — Hù Gān · Proteger el hígado", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Con comidas", "horaDetalle": "4 gotas con las comidas principales", "tags": ["higado", "glucemia", "inflamacion", "digestivo"], "kw": "higado graso hepatico glucemia diabetes colesterol microbiota intestinal inflamacion cronica metabolismo insulina resistencia insulinica nafld trigliceridos berberina cardo mariano curcuma", "indicaciones": "Hígado graso, glucemia elevada, colesterol, inflamación crónica, microbiota, metabolismo", "composicion": "Berberina + Cardo Mariano + Cúrcuma + Pimienta Negra", "precauciones": "Berberina puede potenciar la metformina: ajustar dosis con médico. No usar en embarazo. Cúrcuma: precaución con anticoagulantes y cálculos biliares.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Calma Hepática*\n_Berberina · Silybum marianum (Cardo Mariano) · Curcuma longa · Piper nigrum_\n\nCuatro activos de alta evidencia científica para el soporte metabólico y hepático. La Berberina, presente en la medicina tradicional china desde hace más de 3.000 años (黄连, Huáng Lián), ha demostrado en estudios clínicos un efecto comparable a la metformina en la reducción de glucemia, sin sus efectos secundarios gastrointestinales.\n\nEl Cardo Mariano y su principio activo (silimarina) es el hepatoprotector más estudiado de la fitoterapia occidental.\n\n*Modo de uso:*\n• 4 gotas con las comidas principales (3 veces al día)\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Regulación de glucemia y resistencia a la insulina (Berberina - efecto similar a metformina)\n• Reducción del colesterol LDL y triglicéridos\n• Regeneración y protección hepática (silimarina del Cardo Mariano)\n• Antiinflamatorio sistémico potente (Cúrcuma + Piperina)\n• Mejora de la microbiota intestinal\n• Soporte en hígado graso no alcohólico (NAFLD)\n\n⏱️ Los cambios en glucemia y colesterol son visibles a partir de las 4-8 semanas.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_antiinfl", "nombre": "Fusión Antiinflamatoria", "nombreChino": "消炎 — Xiāo Yán · Eliminar la inflamación", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Flexible", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["inflamacion", "cardiovascular", "digestivo"], "kw": "inflamacion cronica circulacion venosa piernas pesadas edema retencion liquidos varices antiinflamatorio depurativo higado rinon antioxidante matcha diente de leon castano", "indicaciones": "Inflamación crónica, circulación venosa, retención de líquidos, varices, insuficiencia venosa", "composicion": "Matcha + Diente de León + Castaño de Indias", "precauciones": "Diente de León contraindicado en obstrucción biliar. Castaño de Indias: precaución con anticoagulantes. Matcha contiene cafeína.", "dosis_tipo": "gotas", "wsp": "🌿 *Fusión Antiinflamatoria*\n_Matcha · Taraxacum officinale (Diente de León) · Aesculus hippocastanum_\n\nTres plantas con acción antiinflamatoria y circulatoria documentada. El Matcha contiene EGCG (galato de epigalocatequina), el antioxidante más potente del té verde. El Diente de León es el depurativo hepático-renal más usado en la fitoterapia europea. El Castaño de Indias es el estándar de oro fitoterapéutico para la insuficiencia venosa crónica.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas\n• Sublingual o diluido en agua\n\n*Propiedades principales:*\n• Antioxidante potente (Matcha - EGCG)\n• Depurativo hepático y renal (Diente de León)\n• Mejora de la circulación venosa y linfática (Castaño de Indias)\n• Reducción de edemas y pesadez en piernas\n• Antiinflamatorio suave, sostenido y sistémico\n\n⏱️ La mejoría circulatoria suele notarse en 2-4 semanas.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_despar1", "nombre": "Total Desparasitación 1", "nombreChino": "驅蟲 — Qū Chóng · Expulsar los parásitos · Fórmula 1", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Ayunas mañana y noche", "horaDetalle": "4 gotas en ayunas, mañana y noche", "tags": ["parasitos", "digestivo", "inmunidad"], "kw": "parasitos parasitosis giardia oxiuros lombrices tricomonas hongos candida candidiasis intestinal distension abdominal gases picazon anal colon irritable limpieza intestinal desintoxicacion artemisa clavo nogal", "indicaciones": "Parasitosis intestinal, candidiasis, limpieza intestinal profunda, giardia, oxiuros", "composicion": "Nogal Negro + Neem + Clavo de Olor + Cucurbita (semillas de zapallo) + Artemisa Annua", "precauciones": "Contraindicado en embarazo y lactancia. No usar en niños sin supervisión. No usar más de 4 semanas seguidas sin descanso.", "dosis_tipo": "gotas", "wsp": "🌿 *Total Desparasitación 1*\n_Juglans nigra · Azadirachta indica · Syzygium aromaticum · Cucurbita pepo · Artemisia annua_\n\nProtocolo de desparasitación profunda con cinco plantas de acción antiparasitaria complementaria.\n\nLa Artemisia annua (青蒿 Qīng Hāo en MTC) fue durante siglos el tratamiento estándar para la malaria en la medicina tradicional china. Su principio activo, la artemisinina, fue reconocido con el Premio Nobel de Medicina 2015. El Nogal Negro contiene juglanina con actividad antiparasitaria documentada. El Clavo contiene eugenol, uno de los antiparasitarios naturales más potentes conocidos.\n\n*Modo de uso:*\n• 4 gotas en ayunas, mañana y noche\n• Sublingual o diluido en agua\n• Duración recomendada: 21-30 días continuos\n\n*Propiedades principales:*\n• Antiparasitario de amplio espectro (Nogal Negro, Clavo, Artemisa)\n• Antifúngico: candidiasis intestinal (Neem)\n• Expulsión de parásitos intestinales (Cucurbita - semillas de zapallo)\n• Limpieza y depuración intestinal profunda\n• Soporte inmunológico durante el proceso de limpieza\n\n⚠️ *Importante:* acompañar con hidratación abundante y dieta sin azúcar durante el tratamiento.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_despar2", "nombre": "Total Desparasitación 2", "nombreChino": "驅蟲二 — Qū Chóng Èr · Segunda fórmula antiparasitaria", "proveedor": "Yuyos de la Memé", "categoria": "Blend microdosis", "formato": "Gotero 60ml", "esCapsula": false, "precio": 30000, "horario": "Ayunas mañana y noche", "horaDetalle": "4 gotas en ayunas, mañana y noche", "tags": ["parasitos", "digestivo", "inmunidad"], "kw": "parasitos parasitosis giardia oxiuros lombrices tricomonas hongos candida candidiasis intestinal distension abdominal gases picazon anal limpieza intestinal ajenjo paico ajo nogal", "indicaciones": "Parasitosis intestinal, candidiasis, limpieza intestinal, giardia, parásitos resistentes", "composicion": "Nogal Negro + Neem + Ajo + Ajenjo (Artemisa absinthium) + Paico (Chenopodium ambrosioides)", "precauciones": "Contraindicado en embarazo y lactancia. Ajenjo: no usar más de 4 semanas seguidas. Ajo: puede potenciar anticoagulantes.", "dosis_tipo": "gotas", "wsp": "🌿 *Total Desparasitación 2*\n_Juglans nigra · Azadirachta indica · Allium sativum · Artemisia absinthium · Dysphania ambrosioides_\n\nSegunda fórmula antiparasitaria con un perfil de acción diferente a la Desparasitación 1. El Ajo (Allium sativum) aporta alicina, uno de los antimicrobianos naturales más potentes y estudiados. El Ajenjo (Artemisia absinthium) fue el antiparasitario estándar de la medicina herbal europea antes de los antiparasitarios sintéticos. El Paico es la planta antiparasitaria tradicional de América del Sur.\n\n*Modo de uso:*\n• 4 gotas en ayunas, mañana y noche\n• Sublingual o diluido en agua\n• Duración recomendada: 21-30 días continuos\n\n*Propiedades principales:*\n• Antiparasitario de amplio espectro (Ajenjo, Paico, Nogal Negro)\n• Antimicrobiano y antifúngico potente (Ajo - alicina)\n• Antifúngico sistémico (Neem)\n• Expulsión y eliminación de parásitos intestinales\n• Soporte inmunológico durante la limpieza\n\n⚠️ *Importante:* acompañar con hidratación abundante y dieta sin azúcar. Se puede alternar con Desparasitación 1 en protocolos largos.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "yc_enfoque", "nombre": "Fusión Enfoque", "nombreChino": "專注 — Zhuān Zhù · Cápsulas sin alcohol", "proveedor": "Yuyos de la Memé", "categoria": "Blend cápsulas", "formato": "Cápsulas x60u 500mg", "esCapsula": true, "precio": 33700, "horario": "Mañana", "horaDetalle": "1 cápsula de mañana con desayuno", "tags": ["memoria", "energia", "estres"], "kw": "memoria concentracion foco enfoque estudio trabajo rendimiento cognitivo tdah olvido fatiga mental cerebro claridad productividad sin alcohol capsulas ginkgo bacopa rhodiola", "indicaciones": "Concentración, memoria, rendimiento cognitivo, TDAH adulto — sin alcohol", "composicion": "Maca + Ginkgo Biloba + Bacopa Monnieri + Ginseng Siberiano + Rhodiola Rosea", "precauciones": "Ginkgo: precaución con anticoagulantes. Evitar de noche.", "dosis_tipo": "capsula", "wsp": "🌿 *Fusión Enfoque (Cápsulas x60 · 500mg)*\n_Maca · Ginkgo Biloba · Bacopa Monnieri · Ginseng Siberiano · Rhodiola Rosea_\n\nMisma fórmula de la Fusión Enfoque en cápsulas. Ideal para quienes prefieren no consumir alcohol.\n\n*Modo de uso:*\n• 1 cápsula de mañana con el desayuno\n• 500mg por cápsula · 60 unidades\n\n*Propiedades principales:*\n• Mejora de concentración y memoria de trabajo\n• Aumento del flujo sanguíneo cerebral (Ginkgo)\n• Reducción de fatiga mental (Rhodiola + Ginseng Siberiano)\n• Neuroprotección a largo plazo (Bacopa Monnieri)\n• Energía sostenida y equilibrio hormonal (Maca)\n\n⏱️ La Bacopa muestra sus mejores efectos a partir de las 8-12 semanas de uso continuo.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "yc_hormonal", "nombre": "Fusión Reparación Hormonal", "nombreChino": "五味子 — Wǔ Wèi Zǐ · Cápsulas sin alcohol", "proveedor": "Yuyos de la Memé", "categoria": "Blend cápsulas", "formato": "Cápsulas x60u 500mg", "esCapsula": true, "precio": 33700, "horario": "Flexible", "horaDetalle": "1 cápsula 1-2 veces al día", "tags": ["hormonal", "menopausia", "estres"], "kw": "hormonal femenino spm ciclo irregular menopausia perimenopausia sofoco prolactina cortisol equilibrio hormonal mujer sin alcohol capsulas vitex schizandra ashwagandha", "indicaciones": "Equilibrio hormonal femenino, SPM, ciclo irregular, perimenopausia — sin alcohol", "composicion": "Ashwagandha + Schizandra + Vitex Agnus Castus", "precauciones": "Vitex contraindicado en embarazo y lactancia.", "dosis_tipo": "capsula", "wsp": "🌿 *Fusión Reparación Hormonal (Cápsulas x60 · 500mg)*\n_अश्वगन्धा · 五味子 Schizandra · Vitex agnus-castus_\n\nEquilibrio hormonal femenino en cápsulas, ideal para quienes no consumen alcohol.\n\n*Modo de uso:*\n• 1 cápsula 1-2 veces al día con agua · 500mg por cápsula\n\n*Propiedades principales:*\n• Regulación del ciclo y la prolactina (Vitex)\n• Tónico hormonal y hepático (Schizandra)\n• Reducción del cortisol (Ashwagandha)\n\n⏱️ El Vitex necesita mínimo 3 ciclos para su máximo efecto.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "yc_fungi", "nombre": "Fusión Fungi-Ormus", "nombreChino": "七靈菌 — Qī Líng Jūn · Cápsulas sin alcohol", "proveedor": "Yuyos de la Memé", "categoria": "Blend cápsulas", "formato": "Cápsulas x60u 500mg", "esCapsula": true, "precio": 33700, "horario": "Mañana", "horaDetalle": "1 cápsula de mañana", "tags": ["inmunidad", "oncologia", "energia", "memoria"], "kw": "cancer oncologia defensas inmunidad maxima hongos adaptogenos energia cerebro neuroproteccion sin alcohol capsulas siete hongos ormus", "indicaciones": "Inmunidad máxima, neuroprotección, oncología complementaria — sin alcohol", "composicion": "7 hongos: Melena de León + Reishi + Chaga + Maitake + Shiitake + Cordyceps + Cola de Pavo + Ormus", "precauciones": "Precaución con anticoagulantes. No combinar con inmunosupresores.", "dosis_tipo": "capsula", "wsp": "🌿 *Fusión Fungi-Ormus (Cápsulas x60 · 500mg)*\n_Los Siete Hongos Sagrados + Ormus_\n\nLa sinergia inmunomoduladora más completa del catálogo, en cápsula.\n\n*Modo de uso:*\n• 1 cápsula de mañana con agua · 500mg · 60 unidades\n\n*Propiedades principales:*\n• Inmunomodulación profunda · Neuroprotección · Energía · Oncología complementaria\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "yc_hepatica", "nombre": "Fusión Calma Hepática", "nombreChino": "護肝 — Hù Gān · Cápsulas sin alcohol", "proveedor": "Yuyos de la Memé", "categoria": "Blend cápsulas", "formato": "Cápsulas x60u 500mg", "esCapsula": true, "precio": 33700, "horario": "Con comidas", "horaDetalle": "1 cápsula con las comidas", "tags": ["higado", "glucemia", "inflamacion"], "kw": "higado graso glucemia colesterol metabolismo insulina resistencia microbiota sin alcohol capsulas berberina cardo curcuma", "indicaciones": "Hígado, glucemia, colesterol, inflamación — sin alcohol", "composicion": "Berberina + Cardo Mariano + Cúrcuma + Pimienta Negra", "precauciones": "Berberina puede potenciar la metformina. Precaución con anticoagulantes.", "dosis_tipo": "capsula", "wsp": "🌿 *Fusión Calma Hepática (Cápsulas x60 · 500mg)*\n_Berberina · Cardo Mariano · Cúrcuma · Pimienta Negra_\n\nSoporte hepático y metabólico en cápsulas.\n\n*Modo de uso:*\n• 1 cápsula con las comidas principales · 500mg · 60 unidades\n\n*Propiedades principales:*\n• Regulación de glucemia y colesterol (Berberina)\n• Protección hepática (silimarina del Cardo Mariano)\n• Antiinflamatorio sistémico (Cúrcuma)\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "yc_antiinfl", "nombre": "Fusión Antiinflamatoria", "nombreChino": "消炎 — Xiāo Yán · Cápsulas sin alcohol", "proveedor": "Yuyos de la Memé", "categoria": "Blend cápsulas", "formato": "Cápsulas x60u 500mg", "esCapsula": true, "precio": 33700, "horario": "Flexible", "horaDetalle": "1 cápsula 1-2 veces al día", "tags": ["inflamacion", "cardiovascular"], "kw": "inflamacion cronica circulacion venosa piernas pesadas edema retencion liquidos varices sin alcohol capsulas matcha diente castano", "indicaciones": "Inflamación crónica, circulación venosa, retención de líquidos — sin alcohol", "composicion": "Matcha + Diente de León + Castaño de Indias", "precauciones": "Diente de León contraindicado en obstrucción biliar.", "dosis_tipo": "capsula", "wsp": "🌿 *Fusión Antiinflamatoria (Cápsulas x60 · 500mg)*\n\nAntiinflamatorio y circulatorio en cápsulas.\n\n*Modo de uso:*\n• 1 cápsula 1-2 veces al día con agua\n\n*Propiedades principales:*\n• Antioxidante potente (Matcha) · Depurativo (Diente de León) · Circulación venosa (Castaño de Indias)\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_reishi_20", "nombre": "Reishi", "nombreChino": "靈芝 — Líng Zhī · Microdosis 20ml", "proveedor": "Yuyos de la Memé", "categoria": "Hongo adaptógeno", "formato": "Gotero 20ml", "esCapsula": false, "precio": 11000, "horario": "Tarde", "horaDetalle": "4 gotas cada 6-8 horas, tarde", "tags": ["estres", "sueno", "inmunidad", "oncologia", "cardiovascular", "ansiedad"], "kw": "sistema inmune defensas estres nervioso tension no duermo presion alta hipertension corazon oncologia ansiedad calma tranquilidad insomnio sueño", "indicaciones": "Inmunomodulador, sistema nervioso, estrés crónico, oncología complementaria, hipertensión", "precauciones": "Potencia anticoagulantes. No combinar con inmunosupresores.", "dosis_tipo": "gotas", "wsp": "🌿 *Reishi (Ganoderma lucidum) · Microdosis 20ml*\n_靈芝 — Líng Zhī · \"Hongo del espíritu\"_\n\nEl hongo de la inmortalidad de la medicina tradicional china. Inmunomodulador profundo y regulador del sistema nervioso central.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas, preferentemente de tarde\n• Sublingual: mantener 20-30 segundos en boca\n\n*Propiedades principales:*\n• Inmunomodulación profunda (betaglucanos y triterpenoides)\n• Regulación del sistema nervioso y reducción del estrés\n• Soporte cardiovascular y presión arterial\n• Apoyo oncológico complementario\n• Efecto ansiolítico suave y regulador del sueño\n\n⏱️ El frasco de 20ml dura aproximadamente 2-3 meses con dosis estándar.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_reishi_60", "nombre": "Reishi", "nombreChino": "靈芝 — Líng Zhī · Microdosis 60ml", "proveedor": "Yuyos de la Memé", "categoria": "Hongo adaptógeno", "formato": "Gotero 60ml", "esCapsula": false, "precio": 29000, "horario": "Tarde", "horaDetalle": "4 gotas cada 6-8 horas, tarde", "tags": ["estres", "sueno", "inmunidad", "oncologia", "cardiovascular", "ansiedad"], "kw": "sistema inmune defensas estres nervioso tension no duermo presion alta hipertension corazon oncologia ansiedad calma tranquilidad", "indicaciones": "Inmunomodulador, sistema nervioso, estrés crónico, oncología complementaria, hipertensión", "precauciones": "Potencia anticoagulantes. No combinar con inmunosupresores.", "dosis_tipo": "gotas", "wsp": "🌿 *Reishi (Ganoderma lucidum) · Microdosis 60ml*\n_靈芝 — Líng Zhī · \"Hongo del espíritu\"_\n\nEl hongo de la inmortalidad. Frasco grande para tratamientos prolongados.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas, de tarde preferentemente\n• Sublingual: 20-30 segundos en boca\n\n*Propiedades principales:*\n• Inmunomodulación profunda · Regulación nerviosa · Cardiovascular · Oncológico · Sueño\n\n⏱️ El frasco de 60ml dura aproximadamente 6-8 meses con dosis estándar.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_reishi_cap", "nombre": "Reishi", "nombreChino": "靈芝 — Líng Zhī · Cápsulas sin alcohol", "proveedor": "Yuyos de la Memé", "categoria": "Hongo adaptógeno", "formato": "Cápsulas x60u", "esCapsula": true, "precio": 29500, "horario": "Tarde", "horaDetalle": "1 cápsula de tarde", "tags": ["estres", "sueno", "inmunidad", "oncologia", "cardiovascular", "ansiedad"], "kw": "sistema inmune defensas estres nervioso tension no duermo oncologia ansiedad calma sin alcohol capsulas", "indicaciones": "Inmunomodulador, sistema nervioso, estrés crónico, oncología complementaria — sin alcohol", "precauciones": "Potencia anticoagulantes.", "dosis_tipo": "capsula", "wsp": "🌿 *Reishi · Cápsulas x60*\n_靈芝 — Líng Zhī_\n\nInmunomodulador profundo en cápsulas, ideal para quienes no consumen alcohol.\n\n*Modo de uso:* 1 cápsula de tarde con agua.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_melena_20", "nombre": "Melena de León", "nombreChino": "猴頭菇 — Hóu Tóu Gū · Microdosis 20ml", "proveedor": "Yuyos de la Memé", "categoria": "Hongo adaptógeno", "formato": "Gotero 20ml", "esCapsula": false, "precio": 11000, "horario": "Mañana", "horaDetalle": "4 gotas de mañana, en ayunas si es posible", "tags": ["memoria", "energia", "digestivo"], "kw": "memoria concentracion foco enfoque olvido niebla mental cognitivo cerebro ngf nervio vago digestion gastritis mucosa gastrica claridad mental tdah ansiedad rumiacion", "indicaciones": "NGF, memoria, concentración, neuroprotección, nervio vago, mucosa gástrica", "precauciones": "Sin contraindicaciones significativas. Precaución en alergia a hongos.", "dosis_tipo": "gotas", "wsp": "🌿 *Melena de León (Hericium erinaceus) · Microdosis 20ml*\n_猴頭菇 — Hóu Tóu Gū · \"Hongo cabeza de mono\"_\n\nEl gran nootrópico de la medicina tradicional china. Estimula el NGF y regenera las neuronas.\n\n*Modo de uso:*\n• 4 gotas cada 6-8 horas, de mañana preferentemente\n• Sublingual: mantener 20-30 segundos en boca\n\n*Propiedades principales:*\n• Estimulación del NGF (factor de crecimiento nervioso)\n• Mejora de memoria, concentración y claridad mental\n• Reducción de ansiedad y rumiación\n• Soporte de la mucosa gástrica y nervio vago\n• Neuroprotección progresiva\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_melena_cap", "nombre": "Melena de León", "nombreChino": "猴頭菇 — Hóu Tóu Gū · Cápsulas sin alcohol", "proveedor": "Yuyos de la Memé", "categoria": "Hongo adaptógeno", "formato": "Cápsulas x60u", "esCapsula": true, "precio": 29500, "horario": "Mañana", "horaDetalle": "1 cápsula de mañana", "tags": ["memoria", "energia", "digestivo"], "kw": "memoria concentracion foco enfoque olvido niebla mental cognitivo cerebro ngf nervio vago digestion gastritis sin alcohol capsulas", "indicaciones": "NGF, memoria, concentración, neuroprotección — sin alcohol", "precauciones": "Sin contraindicaciones significativas.", "dosis_tipo": "capsula", "wsp": "🌿 *Melena de León · Cápsulas x60*\n_猴頭菇 — Hóu Tóu Gū_\n\nEl gran nootrópico en cápsulas.\n\n*Modo de uso:* 1 cápsula de mañana con agua.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_cordyceps_20", "nombre": "Cordyceps", "nombreChino": "冬蟲夏草 — Dōng Chóng Xià Cǎo · Microdosis 20ml", "proveedor": "Yuyos de la Memé", "categoria": "Hongo adaptógeno", "formato": "Gotero 20ml", "esCapsula": false, "precio": 11000, "horario": "Mañana", "horaDetalle": "4 gotas de mañana, en ayunas", "tags": ["energia", "libido"], "kw": "energia vitalidad cansancio fatiga cronica rendimiento deportivo fisico atletismo sexual libido potencia adrenales suprarrenales sin fuerza agotado me canso rapido resistencia", "indicaciones": "Energía, función adrenal, rendimiento físico y sexual, fatiga crónica", "precauciones": "No usar de noche (insomnio). Precaución en enfermedades autoinmunes.", "dosis_tipo": "gotas", "wsp": "🌿 *Cordyceps · Microdosis 20ml*\n_冬蟲夏草 — Dōng Chóng Xià Cǎo_\n\nEl tónico del Qi vital. Vitalidad, energía y rendimiento físico.\n\n*Modo de uso:* 4 gotas de mañana, en ayunas.\n\n*Propiedades principales:*\n• Energía y reducción de fatiga · ATP y oxigenación celular · Adrenales · Libido y rendimiento sexual\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_ashwa_20", "nombre": "Ashwagandha", "nombreChino": "अश्वगन्धा — Ashwagandha · Microdosis 20ml", "proveedor": "Yuyos de la Memé", "categoria": "Hierba adaptógena", "formato": "Gotero 20ml", "esCapsula": false, "precio": 9500, "horario": "Noche", "horaDetalle": "4 gotas de noche antes de dormir", "tags": ["estres", "sueno", "hormonal", "ansiedad"], "kw": "estres cortisol agotado nervioso ansioso no duermo insomnio cansado sin energia tiroides testosterona equilibrio nervioso angustia tension burn out burnout", "indicaciones": "Estrés, cortisol, tiroides, testosterona, sueño profundo, ansiedad", "precauciones": "Contraindicado en embarazo. Precaución en hipertiroidismo.", "dosis_tipo": "gotas", "wsp": "🌿 *Ashwagandha · Microdosis 20ml*\n_अश्वगन्धा — \"Fuerza de caballo\"_\n\nLa raíz sagrada del ayurveda. Gran restaurador del sistema nervioso agotado.\n\n*Modo de uso:* 4 gotas de noche, antes de dormir.\n\n*Propiedades principales:*\n• Reducción del cortisol y estrés crónico · Sueño profundo · Soporte hormonal y tiroideo · Reducción de ansiedad\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_berberina_cap", "nombre": "Berberina", "nombreChino": "黄连 — Huáng Lián · Cápsulas", "proveedor": "Yuyos de la Memé", "categoria": "Hierba adaptógena", "formato": "Cápsulas x60u", "esCapsula": true, "precio": 31000, "horario": "Con comidas", "horaDetalle": "1 cápsula con las comidas", "tags": ["glucemia", "higado", "cardiovascular"], "kw": "glucemia diabetes colesterol microbiota intestinal higado graso metabolismo insulina resistencia insulinica metformina alternativa natural trigliceridos sin alcohol capsulas", "indicaciones": "Glucemia, colesterol, microbiota, hígado graso. Efecto similar a metformina", "precauciones": "Puede potenciar la metformina: ajustar dosis con médico. No usar en embarazo.", "dosis_tipo": "capsula", "wsp": "🌿 *Berberina · Cápsulas x60*\n_黄连 — Huáng Lián · Medicina tradicional china_\n\nLa Berberina ha demostrado en estudios clínicos un efecto comparable a la metformina en la reducción de glucemia, sin sus efectos secundarios gastrointestinales.\n\n*Modo de uso:* 1 cápsula con las comidas principales (2-3 veces al día).\n\n*Propiedades principales:*\n• Regulación de glucemia y resistencia a la insulina · Reducción de colesterol LDL · Microbiota · Hígado graso\n\n⏱️ Cambios visibles a partir de las 4-8 semanas.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_vitex_cap", "nombre": "Vitex Agnus Castus", "nombreChino": "Vitex agnus-castus · Cápsulas", "proveedor": "Yuyos de la Memé", "categoria": "Hierba adaptógena", "formato": "Cápsulas x60u", "esCapsula": true, "precio": 31000, "horario": "Mañana", "horaDetalle": "1 cápsula de mañana en ayunas", "tags": ["hormonal", "menopausia"], "kw": "hormonal femenino spm premenstrual ciclo irregular menopausia perimenopausia sofoco prolactina ovario progesterona estrogeno sin alcohol capsulas", "indicaciones": "SPM, ciclo irregular, perimenopausia, prolactina elevada", "precauciones": "Contraindicado en embarazo y lactancia. No combinar con anticonceptivos hormonales.", "dosis_tipo": "capsula", "wsp": "🌿 *Vitex Agnus Castus · Cápsulas x60*\n\nRegulador del ciclo menstrual y la prolactina. Usado desde la Antigua Grecia.\n\n*Modo de uso:* 1 cápsula de mañana en ayunas.\n\n*Propiedades principales:*\n• Regulación del ciclo menstrual · Reducción de prolactina · Mejora del SPM\n\n⏱️ Necesita mínimo 3 ciclos para su máximo efecto.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_cimicifuga_cap", "nombre": "Cimicifuga", "nombreChino": "Actaea racemosa · Cápsulas", "proveedor": "Yuyos de la Memé", "categoria": "Hierba adaptógena", "formato": "Cápsulas x60u", "esCapsula": true, "precio": 31000, "horario": "Flexible", "horaDetalle": "1 cápsula 1-2 veces al día", "tags": ["menopausia", "hormonal"], "kw": "menopausia sofocos calores nocturnos hormonas femeninas fitoestrогeno perimenopausia sin estrogeno alternativa natural hormonal sin alcohol capsulas", "indicaciones": "Menopausia, sofocos, hormonas femeninas, fitoestrógeno natural", "precauciones": "No usar en cánceres hormonodependientes (mama, endometrio). Contraindicado en embarazo.", "dosis_tipo": "capsula", "wsp": "🌿 *Cimicifuga (Actaea racemosa) · Cápsulas x60*\n\nFitoestrógeno natural para menopausia y sofocos.\n\n*Modo de uso:* 1 cápsula 1-2 veces al día con agua.\n\n*Propiedades principales:*\n• Reducción de sofocos y calores nocturnos · Modulación estrogénica natural · Mejora del estado de ánimo\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_bacopa_cap", "nombre": "Bacopa Monnieri", "nombreChino": "ब्राह्मी — Brāhmī · Planta de Brahma", "proveedor": "Yuyos de la Memé", "categoria": "Hierba adaptógena", "formato": "Cápsulas x60u", "esCapsula": true, "precio": 31000, "horario": "Mañana", "horaDetalle": "1 cápsula de mañana con el desayuno", "tags": ["memoria", "estres", "ansiedad"], "kw": "memoria ansiedad tdah deficit atencion neuroproteccion cognitivo aprendizaje estudio concentracion olvido claridad mental largo plazo sin alcohol capsulas", "indicaciones": "Memoria, ansiedad, TDAH, neuroprotección a largo plazo, aprendizaje", "precauciones": "Tomar con comida (malestar gástrico en ayunas). Efectos máximos a partir de 8-12 semanas.", "dosis_tipo": "capsula", "wsp": "🌿 *Bacopa Monnieri · Cápsulas x60*\n_ब्राह्मी — Brāhmī · \"Planta de Brahma\"_\n\nEl nootrópico ayurvédico por excelencia. La planta que los estudiantes de los Vedas tomaban para memorizar miles de versos sagrados.\n\n*Modo de uso:* 1 cápsula de mañana con el desayuno (no en ayunas).\n\n*Propiedades principales:*\n• Mejora de la memoria a largo plazo · Reducción de la ansiedad · Neuroprotección · TDAH · Aprendizaje\n\n⏱️ Efectos máximos a partir de las 8-12 semanas de uso continuo.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_colapavo_20", "nombre": "Cola de Pavo", "nombreChino": "雲芝 — Yún Zhī · \"Hongo nube\" · Trametes versicolor", "proveedor": "Yuyos de la Memé", "categoria": "Hongo adaptógeno", "formato": "Gotero 20ml", "esCapsula": false, "precio": 11000, "horario": "Flexible", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["prostata", "inmunidad", "oncologia"], "kw": "cancer tumor oncologia defensas sistema inmune microbiota intestinal prostata dificultad urinaria psk psp inmunomodulador", "indicaciones": "Inmunomodulador (PSK/PSP), microbiota intestinal, oncología complementaria, próstata", "precauciones": "Precaución con inmunosupresores. Consultar médico en tratamientos oncológicos activos.", "dosis_tipo": "gotas", "wsp": "🌿 *Cola de Pavo (Trametes versicolor) · Microdosis 20ml*\n_雲芝 — Yún Zhī · \"Hongo nube\"_\n\nEl único hongo medicinal aprobado como complemento oncológico en Japón (PSK / Krestin). Usado en la medicina china durante más de 2.000 años.\n\n*Modo de uso:* 4 gotas cada 6-8 horas · Sublingual.\n\n*Propiedades principales:*\n• Inmunomodulación profunda (PSK y PSP) · Oncología complementaria · Microbiota · Soporte prostático\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "y_ortiga_20", "nombre": "Ortiga", "nombreChino": "Urtica dioica · Microdosis 20ml", "proveedor": "Yuyos de la Memé", "categoria": "Hierba adaptógena", "formato": "Gotero 20ml", "esCapsula": false, "precio": 9500, "horario": "Flexible", "horaDetalle": "4 gotas cada 6-8 horas", "tags": ["prostata", "inflamacion", "cardiovascular"], "kw": "prostata dificultad urinaria chorro orina nocturna nocturia hiperplasia prostatica inflamacion antiinflamatorio hierro anemia cardiovascular diuretico", "indicaciones": "Próstata, dificultad urinaria, antiinflamatorio, cardiovascular, hierro", "precauciones": "Puede potenciar diuréticos y antihipertensivos. Precaución en hipotensión.", "dosis_tipo": "gotas", "wsp": "🌿 *Ortiga (Urtica dioica) · Microdosis 20ml*\n\nHierba con acción documentada sobre la próstata y el tracto urinario. Antiinflamatorio natural y fuente de hierro biodisponible.\n\n*Modo de uso:* 4 gotas cada 6-8 horas · Sublingual o diluido en agua.\n\n*Propiedades principales:*\n• Soporte prostático: mejora del flujo urinario y reducción de la nocturia · Antiinflamatorio · Hierro · Cardiovascular\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "ye_melena_125", "nombre": "Yerba Orgánica con Melena de León", "nombreChino": "猴頭菇 — Hóu Tóu Gū · Yerba 125gr", "proveedor": "Yuyos de la Memé", "categoria": "Yerba orgánica", "formato": "125gr", "esCapsula": false, "precio": 13000, "horario": "Mañana", "horaDetalle": "Mate matutino de concentración", "tags": ["memoria", "energia"], "kw": "memoria concentracion foco enfoque mate yerba ritual cognitivo cerebro claridad mental mañana productividad", "indicaciones": "Concentración, memoria, claridad mental, NGF, ritual de enfoque diario", "ytLink": "https://www.youtube.com/watch?v=DtYrxTp_1fA", "ytLabel": "Música para concentración", "precauciones": "Sin contraindicaciones significativas. Precaución en alergia a hongos.", "dosis_tipo": "yerba", "wsp": "🌿 *Blend de yerbas orgánicas con Melena de León*\n_猴頭菇 — Hóu Tóu Gū · 125gr_\n\nLa melena de leon es un hongo estudiado por su capacidad de estimular el *factor de crecimiento nervioso (NGF)*, favoreciendo la regeneración neuronal y apoyando funciones cognitivas como memoria, enfoque y claridad mental.\n\nEn el plano más sutil, acompaña estados de concentración, orden mental y presencia, ayudando a bajar la dispersión y sostener la atención en lo que estás haciendo.\n\n*Modo de uso:*\n• Usar en *mate chico* para una mejor dosificación\n• No mezclar con otras yerbas\n• Evitar cambiar la yerba constantemente: el hongo sigue liberando sus propiedades con cada cebada\n\n🎧 *Sugerencia:* podés acompañar el ritual con música para la concentración\nhttps://www.youtube.com/watch?v=DtYrxTp_1fA\n\nIdeal para generar un momento de enfoque y conexión en la rutina diaria 🌱"}, {"id": "ye_melena_250", "nombre": "Yerba Orgánica con Melena de León", "nombreChino": "猴頭菇 — Hóu Tóu Gū · Yerba 250gr", "proveedor": "Yuyos de la Memé", "categoria": "Yerba orgánica", "formato": "250gr", "esCapsula": false, "precio": 23000, "horario": "Mañana", "horaDetalle": "Mate matutino de concentración", "tags": ["memoria", "energia"], "kw": "memoria concentracion foco enfoque mate yerba ritual cognitivo cerebro claridad mental mañana productividad", "indicaciones": "Concentración, memoria, claridad mental, NGF, ritual de enfoque diario", "ytLink": "https://www.youtube.com/watch?v=DtYrxTp_1fA", "ytLabel": "Música para concentración", "precauciones": "Sin contraindicaciones significativas.", "dosis_tipo": "yerba", "wsp": "🌿 *Blend de yerbas orgánicas con Melena de León*\n_猴頭菇 — Hóu Tóu Gū · 250gr_\n\nLa melena de leon es un hongo estudiado por su capacidad de estimular el *factor de crecimiento nervioso (NGF)*, favoreciendo la regeneración neuronal y apoyando funciones cognitivas como memoria, enfoque y claridad mental.\n\nEn el plano más sutil, acompaña estados de concentración, orden mental y presencia, ayudando a bajar la dispersión y sostener la atención en lo que estás haciendo.\n\n*Modo de uso:*\n• Usar en *mate chico* para una mejor dosificación\n• No mezclar con otras yerbas\n• Evitar cambiar la yerba constantemente: el hongo sigue liberando sus propiedades con cada cebada\n\n🎧 *Sugerencia:* podés acompañar el ritual con música para la concentración\nhttps://www.youtube.com/watch?v=DtYrxTp_1fA\n\nIdeal para generar un momento de enfoque y conexión en la rutina diaria 🌱"}, {"id": "ye_reishi_125", "nombre": "Yerba Orgánica con Reishi", "nombreChino": "靈芝 — Líng Zhī · Yerba 125gr", "proveedor": "Yuyos de la Memé", "categoria": "Yerba orgánica", "formato": "125gr", "esCapsula": false, "precio": 13000, "horario": "Tarde/Noche", "horaDetalle": "Mate de tarde o noche para relajarse", "tags": ["estres", "sueno", "inmunidad"], "kw": "relajacion calma paz tranquilidad estres tension descanso inmunidad mate yerba ritual tarde noche bajar el ritmo insomnio", "indicaciones": "Relajación, estrés, sistema nervioso, inmunidad, ritual de descanso", "ytLink": "https://www.youtube.com/watch?v=263Vb6xiifo", "ytLabel": "Música para relajación", "precauciones": "Potencia anticoagulantes.", "dosis_tipo": "yerba", "wsp": "🌿 *Blend de yerbas orgánicas con Reishi*\n_靈芝 — Líng Zhī · 125gr_\n\nEl reishi es un hongo estudiado por su capacidad de modular el sistema inmune, reducir la respuesta al estrés y favorecer la regulación del sistema nervioso, acompañando procesos de descanso y recuperación.\n\nEn un plano más sutil, invita a bajar el ritmo, soltar la tensión del día y entrar en un estado de mayor calma y relajación.\n\n*Modo de uso:*\n• Usar en *mate chico* para una mejor dosificación\n• No mezclar con otras yerbas\n• Evitar cambiar la yerba constantemente: el hongo sigue liberando sus propiedades con cada cebada\n\n🎧 *Sugerencia:* podés acompañar el ritual con música para relajación\nhttps://www.youtube.com/watch?v=263Vb6xiifo\n\nIdeal para generar un momento de pausa y desconexión en la rutina diaria 🌙"}, {"id": "ye_reishi_250", "nombre": "Yerba Orgánica con Reishi", "nombreChino": "靈芝 — Líng Zhī · Yerba 250gr", "proveedor": "Yuyos de la Memé", "categoria": "Yerba orgánica", "formato": "250gr", "esCapsula": false, "precio": 23000, "horario": "Tarde/Noche", "horaDetalle": "Mate de tarde o noche", "tags": ["estres", "sueno", "inmunidad"], "kw": "relajacion calma paz tranquilidad estres tension descanso inmunidad mate yerba ritual tarde noche", "indicaciones": "Relajación, estrés, sistema nervioso, inmunidad, ritual de descanso", "ytLink": "https://www.youtube.com/watch?v=263Vb6xiifo", "ytLabel": "Música para relajación", "precauciones": "Potencia anticoagulantes.", "dosis_tipo": "yerba", "wsp": "🌿 *Blend de yerbas orgánicas con Reishi*\n_靈芝 — Líng Zhī · 250gr_\n\nEl reishi es un hongo estudiado por su capacidad de modular el sistema inmune, reducir la respuesta al estrés y favorecer la regulación del sistema nervioso.\n\n*Modo de uso:*\n• Usar en *mate chico* · No mezclar con otras yerbas\n\n🎧 *Sugerencia:* música para relajación\nhttps://www.youtube.com/watch?v=263Vb6xiifo\n\nIdeal para generar un momento de pausa y desconexión en la rutina diaria 🌙"}, {"id": "ye_cordyceps_125", "nombre": "Yerba Orgánica con Cordyceps", "nombreChino": "冬蟲夏草 — Dōng Chóng Xià Cǎo · Yerba 125gr", "proveedor": "Yuyos de la Memé", "categoria": "Yerba orgánica", "formato": "125gr", "esCapsula": false, "precio": 13000, "horario": "Mañana", "horaDetalle": "Mate matutino energizante", "tags": ["energia", "libido"], "kw": "energia vitalidad cansancio fatiga rendimiento fisico deportivo mate yerba ritual mañana activacion sin caida picos energia limpia", "indicaciones": "Energía, rendimiento físico, vitalidad, activación matutina", "precauciones": "Precaución en enfermedades autoinmunes. Evitar de noche.", "dosis_tipo": "yerba", "wsp": "🌿 *Blend de yerbas orgánicas con Cordyceps*\n_冬蟲夏草 — Dōng Chóng Xià Cǎo · 125gr_\n\nEl cordyceps es un hongo adaptógeno utilizado en la medicina tradicional tibetana por siglos para potenciar la vitalidad, la resistencia física y la energía sostenida.\n\nEn la tradición tibetana, fue descubierto por pastores que notaron cómo sus animales que pastaban en zonas donde crecía tenían una energía y vitalidad extraordinarias.\n\n*Modo de uso:*\n• Usar en *mate chico* para una mejor dosificación\n• No mezclar con otras yerbas\n• Evitar cambiar la yerba constantemente: el hongo sigue liberando sus propiedades con cada cebada\n\nIdeal para comenzar el día con energía y foco 🌄"}, {"id": "ye_cordyceps_250", "nombre": "Yerba Orgánica con Cordyceps", "nombreChino": "冬蟲夏草 — Dōng Chóng Xià Cǎo · Yerba 250gr", "proveedor": "Yuyos de la Memé", "categoria": "Yerba orgánica", "formato": "250gr", "esCapsula": false, "precio": 23000, "horario": "Mañana", "horaDetalle": "Mate matutino energizante", "tags": ["energia", "libido"], "kw": "energia vitalidad cansancio fatiga rendimiento fisico deportivo mate yerba ritual mañana activacion energia limpia", "indicaciones": "Energía, rendimiento físico, vitalidad, activación matutina", "precauciones": "Precaución en enfermedades autoinmunes. Evitar de noche.", "dosis_tipo": "yerba", "wsp": "🌿 *Blend de yerbas orgánicas con Cordyceps*\n_冬蟲夏草 — Dōng Chóng Xià Cǎo · 250gr_\n\nEl cordyceps transforma el mate matutino en un ritual de activación: energía limpia, sin picos ni caídas.\n\n*Modo de uso:* Usar en *mate chico* · No mezclar con otras yerbas.\n\nIdeal para comenzar el día con energía y foco 🌄"}, {"id": "m_agua", "nombre": "Agua de Mar Pura", "nombreChino": "海水 — Hǎi Shuǐ · Plasma marino isotónico", "proveedor": "Yuyos de la Memé", "categoria": "Producto marino", "formato": "1 litro", "esCapsula": false, "precio": 6500, "horario": "Mañana en ayunas", "horaDetalle": "Mañana en ayunas, diluida 1:3 con agua dulce", "tags": ["inmunidad", "digestivo", "energia"], "kw": "remineralizacion minerales oligoelementos alcalinizacion microbiota intestinal energia celular recuperacion agua mar plasma marino rene quinton minerales", "indicaciones": "Remineralización, alcalinización, microbiota, energía celular, recuperación", "precauciones": "No consumir hipertónica sin diluir. Precaución en hipertensión. Consultar en insuficiencia renal.", "dosis_tipo": "otro", "wsp": "🌊 *Agua de Mar Pura · 1 litro*\n_海水 — Hǎi Shuǐ_\n\nRica en más de 80 minerales y oligoelementos biodisponibles en proporciones similares al plasma sanguíneo humano. El uso terapéutico del agua de mar fue sistematizado por el biólogo francés René Quinton, quien demostró que el plasma marino y el plasma sanguíneo tienen una composición mineral prácticamente idéntica.\n\n*Modo de uso:*\n• Preparar en proporción 1:3 con agua dulce (isotónica)\n• Tomar de mañana en ayunas: comenzar con 50ml\n\n*Propiedades principales:*\n• Remineralización profunda · Alcalinización · Microbiota · Energía celular · Soporte inmunológico\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}, {"id": "m_ormus", "nombre": "Ormus Marino", "nombreChino": "海洋礦物 — Hǎi Yáng Kuàng Wù · Minerales del océano", "proveedor": "Yuyos de la Memé", "categoria": "Producto marino", "formato": "250ml", "esCapsula": false, "precio": 6500, "horario": "Mañana en ayunas", "horaDetalle": "3-5 gotas de mañana en ayunas, diluidas en agua", "tags": ["energia", "inmunidad"], "kw": "ormus minerales monatomicos energia sutil conductividad celular mar marino oligoelementos", "indicaciones": "Minerales monótomos, energía sutil, conductividad celular, oligoelementos marinos", "precauciones": "Producto no convencional. Consultar con médico en patologías crónicas.", "dosis_tipo": "otro", "wsp": "🌊 *Ormus Marino · 250ml*\n_海洋礦物 — Hǎi Yáng Kuàng Wù_\n\nConcentrado de minerales en estado monótomos obtenidos del agua de mar. Soporte energético y de conductividad celular.\n\n*Modo de uso:* 3-5 gotas de mañana en ayunas, diluidas en agua.\n\nAnte cualquier duda, estoy para acompañarte en el proceso 🤝"}];
+
+window._chips=["¿Qué le pasa al paciente?","Describí el caso","Contame los síntomas","¿Qué le recomiendo?","El paciente me dice que...","Antecedentes del paciente","Me recetaron esto, ¿es correcto?","¿Para qué sirve esto que le dieron?","Me dijeron que tome X, ¿sirve?"];
+window._pacientes=[];
+let soloCapsula=false,activeTags=[],peso=0,adminAuth=false;
+
+/* PRODUCTOS */
+function toggleCapsulas(){soloCapsula=!soloCapsula;document.getElementById("filterCapsulas").classList.toggle("active",soloCapsula);document.getElementById("checkIcon").textContent=soloCapsula?"✓":"";filterProducts();}
+function toggleTag(el,tag){const i=activeTags.indexOf(tag);if(i>-1){activeTags.splice(i,1);el.classList.remove("active");}else{activeTags.push(tag);el.classList.add("active");}filterProducts();}
+function updateDosis(){peso=parseFloat(document.getElementById("pesoInput").value)||0;document.querySelectorAll(".product-card.expanded").forEach(card=>{const p=P.find(x=>x.id===card.dataset.id);if(p)updateDosisCard(card,p);});}
+function updateDosisCard(card,p){const dv=card.querySelector(".dosis-value"),dd=card.querySelector(".dosis-detail");if(!dv||p.dosis_tipo!=="peso")return;const d=peso>0?Math.round(peso/2):null;dv.textContent=d?d+" gotas":"Ingresá el peso del paciente ↑";if(dd)dd.textContent=d?peso+"kg ÷ 2 = "+d+" gotas por toma · "+p.horaDetalle:"";}
+function filterProducts(){
+  const q=normalize(document.getElementById("searchInput").value);
+  const words=q.split(/\s+/).filter(Boolean);
+  const grid=document.getElementById("productsGrid");grid.innerHTML="";
+  const filtered=P.filter(p=>{
+    if(soloCapsula&&!p.esCapsula)return false;
+    if(activeTags.length>0&&!activeTags.some(t=>p.tags.includes(t)))return false;
+    if(words.length>0){const h=normalize((p.nombre||"")+" "+(p.indicaciones||"")+" "+p.tags.join(" ")+" "+(p.composicion||"")+" "+(p.categoria||"")+" "+(p.kw||""));if(!words.every(w=>h.includes(w)))return false;}
+    return true;
+  });
+  document.getElementById("countDisplay").textContent=filtered.length;
+  if(filtered.length===0){grid.innerHTML='<div class="empty-state"><div class="empty-kanji">診</div><p>No se encontraron productos para esta búsqueda</p></div>';return;}
+  const groups={};filtered.forEach(p=>{if(!groups[p.proveedor])groups[p.proveedor]=[];groups[p.proveedor].push(p);});
+  ["Cultivamente","Yuyos de la Memé"].forEach(prov=>{
+    if(!groups[prov])return;
+    const lbl=document.createElement("div");lbl.className="section-label";
+    lbl.textContent=prov==="Cultivamente"?"— Cultivamente · Extractos Ultraconcentrados":"— Yuyos de la Memé · Microdosis · Cápsulas · Yerbas · Marinos";
+    grid.appendChild(lbl);groups[prov].forEach(p=>grid.appendChild(buildCard(p)));
+  });
+}
+function buildCard(p){
+  const card=document.createElement("div");card.className="product-card";card.dataset.id=p.id;
+  card.innerHTML=`<div class="card-top"><div><div class="card-name">${p.nombre}</div>${p.nombreChino?`<div class="card-chinese">${p.nombreChino}</div>`:""}</div><div class="card-badges"><span class="badge badge-cat">${p.categoria}</span><span class="badge badge-formato">${p.formato}</span></div></div><div class="card-indicaciones">${p.indicaciones}</div><div class="expand-hint">Ver protocolo completo</div><div class="card-body">${p.composicion?`<div class="info-block"><label>Composición</label><p>${p.composicion}</p></div>`:""} ${buildDosis(p)}<div class="card-row"><div class="info-block"><label>Horario sugerido</label><p><strong>${p.horario}</strong><br><span style="font-size:11px;color:var(--muted)">${p.horaDetalle}</span></p></div><div class="info-block"><label>Administración</label><p style="font-size:11px">${getAdmin(p)}</p></div></div>${p.precauciones?`<div class="precaucion-block"><label>⚠ Precauciones / Contraindicaciones</label><p>${p.precauciones}</p></div>`:""}${p.ytLink?`<div class="info-block"><label>Música sugerida</label><a href="${p.ytLink}" target="_blank" class="yt-link">▶ ${p.ytLabel}</a></div>`:""}<div class="precio-row"><div><span class="precio-label">Precio público Zhen Lab</span><span class="precio-value">$${p.precio.toLocaleString("es-AR")}</span></div><button class="btn-whatsapp" onclick="copyWsp(event,'${p.id}')">📋 Copiar para WhatsApp</button></div></div>`;
+  card.addEventListener("click",e=>{if(e.target.closest(".btn-whatsapp")||e.target.closest("a"))return;card.classList.toggle("expanded");if(card.classList.contains("expanded"))updateDosisCard(card,p);});
+  return card;
+}
+function buildDosis(p){
+  if(p.dosis_tipo==="peso"){const d=peso>0?Math.round(peso/2):null;return`<div class="dosis-calc"><label>Dosificación calculada</label><div class="dosis-value">${d?d+" gotas":"Ingresá el peso del paciente ↑"}</div><div class="dosis-detail">${d?peso+"kg ÷ 2 = "+d+" gotas por toma · "+p.horaDetalle:""}</div></div>`;}
+  if(p.dosis_tipo==="gotas")return`<div class="dosis-calc"><label>Dosificación</label><div class="dosis-value">4 gotas</div><div class="dosis-detail">Cada 6-8 horas · ${p.horaDetalle}</div></div>`;
+  if(p.dosis_tipo==="capsula")return`<div class="dosis-calc"><label>Dosificación</label><div class="dosis-value">1 cápsula</div><div class="dosis-detail">${p.horaDetalle}</div></div>`;
+  if(p.dosis_tipo==="yerba")return`<div class="dosis-calc"><label>Modo de uso</label><div class="dosis-value">Mate chico</div><div class="dosis-detail">No mezclar · ${p.horaDetalle}</div></div>`;
+  return"";
+}
+function getAdmin(p){if(p.dosis_tipo==="peso")return"Tintura en alcohol de cereal · Diluir en agua fría o templada · No usar agua caliente";if(p.dosis_tipo==="gotas")return"Microdosis sublingual · Mantener 20-30 seg en boca antes de tragar";if(p.dosis_tipo==="capsula")return"Cápsula 500mg · Tomar con agua";if(p.dosis_tipo==="yerba")return"Yerba orgánica · Mate chico · No mezclar con otras yerbas";return"Ver indicaciones del producto";}
+function copyWsp(e,id){e.stopPropagation();const p=P.find(x=>x.id===id);if(!p)return;let txt=p.wsp||"";if(p.dosis_tipo==="peso"&&peso>0){const d=Math.round(peso/2);txt=txt.replace("_Peso (kg) ÷ 2 = cantidad de gotas por toma_","_Dosis personalizada: "+d+" gotas por toma ("+peso+"kg ÷ 2)_");}navigator.clipboard.writeText(txt).then(()=>{const btn=e.target.closest(".btn-whatsapp");const orig=btn.innerHTML;btn.innerHTML="✓ Copiado";btn.style.background="var(--mid-green)";setTimeout(()=>{btn.innerHTML=orig;btn.style.background="";},2000);});}
+
+/* PACIENTES */
+function getR(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:"";}
+
+function renderPacientes(){
+  const q=normalize(document.getElementById("pacSearchInput").value);
+  const words=q.split(/\s+/).filter(Boolean);
+  const list=document.getElementById("pacList");list.innerHTML="";
+  const filtered=window._pacientes.filter(p=>{if(!words.length)return true;return words.every(w=>normalize((p.nombre||"")+" "+(p.motivo||"")).includes(w));});
+  if(filtered.length===0){list.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;letter-spacing:1px">Sin pacientes registrados</div>';return;}
+  filtered.forEach(pac=>list.appendChild(buildPacCard(pac)));
+}
+
+function buildPacCard(pac){
+  const card=document.createElement("div");card.className="pac-card";card.id="pac-"+pac.fbId;
+  const segs=pac.seguimientos||[];
+  card.innerHTML=`
+    <div class="pac-card-header" onclick="togglePacCard('${pac.fbId}')">
+      <div>
+        <div class="pac-name">${pac.nombre||"Sin nombre"}</div>
+        <div class="pac-meta">${pac.edad?pac.edad+" años":""} ${pac.sexo||""} ${pac.peso?"· "+pac.peso+"kg":""} · ${pac.motivo||"Sin motivo registrado"}</div>
+      </div>
+      <span class="pac-badge">${segs.length} seguimiento${segs.length!==1?"s":""}</span>
+    </div>
+    <div class="pac-body">
+      <div class="pac-section-title">Ficha inicial · ${pac.fechaCreacion||""}</div>
+      <div class="pac-info-grid">
+        ${pac.motivo?`<div><b>Motivo</b>${pac.motivo}</div>`:""}
+        ${pac.tiempo?`<div><b>Tiempo</b>${pac.tiempo}</div>`:""}
+        ${pac.intensidad?`<div><b>Intensidad inicial</b>${pac.intensidad}/10</div>`:""}
+        ${pac.peso?`<div><b>Peso inicial</b>${pac.peso} kg</div>`:""}
+        ${pac.alimentacion?`<div><b>Alimentación</b>${pac.alimentacion}</div>`:""}
+        ${pac.sueno?`<div><b>Sueño</b>${pac.sueno}</div>`:""}
+        ${pac.estres?`<div><b>Estrés</b>${pac.estres}</div>`:""}
+        ${pac.diagnostico?`<div><b>Diagnóstico</b>${pac.diagnostico}</div>`:""}
+        ${pac.medicacion?`<div><b>Medicación</b>${pac.medicacion}</div>`:""}
+        ${pac.productos?`<div style="grid-column:1/-1"><b>Productos indicados</b>${pac.productos}</div>`:""}
+      </div>
+      ${segs.length>0?`<div class="pac-section-title">Seguimientos</div>${segs.map((s,i)=>buildSegView(s,i)).join("")}`:""}
+      <div class="pac-btn-row">
+        <button class="pac-btn pac-btn-secondary" onclick="toggleFormSeg('${pac.fbId}')">+ Nuevo seguimiento</button>
+        <button class="pac-btn pac-btn-danger" onclick="eliminarPaciente('${pac.fbId}')">Eliminar</button>
+      </div>
+      <div class="form-seg-wrap" id="form-seg-${pac.fbId}">
+        ${buildFormSeg(pac.fbId)}
+      </div>
+    </div>`;
+  return card;
+}
+
+function buildSegView(s,i){
+  const pct=(s.intensidad||0)*10;
+  return`<div class="seguimiento-item">
+    <div class="seguimiento-date">Consulta #${i+1} · ${s.fecha||""}</div>
+    <div class="seguimiento-data pac-info-grid">
+      ${s.sintoma?`<div><b>Síntoma</b>${s.sintoma}</div>`:""}
+      ${s.intensidad!==undefined?`<div><b>Intensidad</b>${s.intensidad}/10 <div class="evol-bar"><div class="evol-track"><div class="evol-fill" style="width:${pct}%"></div></div></div></div>`:""}
+      ${s.peso?`<div><b>Peso</b>${s.peso} kg</div>`:""}
+      ${s.cambio?`<div><b>Evolución</b>${s.cambio}</div>`:""}
+      ${s.adherencia?`<div><b>Adherencia</b>${s.adherencia}</div>`:""}
+      ${s.tolerancia?`<div><b>Tolerancia</b>${s.tolerancia}</div>`:""}
+      ${s.alimentacion?`<div><b>Alimentación</b>${s.alimentacion}</div>`:""}
+      ${s.sueno?`<div><b>Sueño</b>${s.sueno}</div>`:""}
+      ${s.estres?`<div><b>Estrés</b>${s.estres}</div>`:""}
+      ${s.cambioRutina?`<div><b>Cambios rutina</b>${s.cambioRutina}</div>`:""}
+      ${s.notas?`<div style="grid-column:1/-1"><b>Notas</b>${s.notas}</div>`:""}
+    </div>
+  </div>`;
+}
+
+function buildFormSeg(fbId){
+  return`<div class="pac-form">
+    <div class="pac-field"><label>Síntoma principal tratado</label>
+      <div class="pac-radio-group">
+        ${["Dolor","Ansiedad","Sueño","Digestivo","Hormonal","Energía","Otro"].map(o=>`<input type="radio" name="ss-${fbId}" id="ss-${o}-${fbId}" value="${o}"><label for="ss-${o}-${fbId}">${o}</label>`).join("")}
+      </div>
+      <input type="text" id="ss-otro-${fbId}" placeholder="Especificá si es Otro..." style="margin-top:6px"/>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="pac-field"><label>Intensidad hoy (1-10)</label>
+        <div class="pac-slider-row">
+          <input type="range" class="pac-slider" id="si-${fbId}" min="1" max="10" value="5" oninput="document.getElementById('si-val-${fbId}').textContent=this.value"/>
+          <div class="pac-slider-val" id="si-val-${fbId}">5</div>
+        </div>
+      </div>
+      <div class="pac-field"><label>Peso actual (kg)</label><input type="number" id="sp-${fbId}" min="20" max="300" placeholder="70"/></div>
+    </div>
+    <div class="pac-field"><label>¿Notaste cambios?</label>
+      <div class="pac-radio-group">
+        ${["Mejoró","Igual","Empeoró"].map(o=>`<input type="radio" name="sc-${fbId}" id="sc-${o}-${fbId}" value="${o}"><label for="sc-${o}-${fbId}">${o}</label>`).join("")}
+      </div>
+      <input type="text" id="sc-det-${fbId}" placeholder="¿Qué cambió?" style="margin-top:6px"/>
+    </div>
+    <div class="pac-field"><label>¿Tomás el preparado regularmente?</label>
+      <div class="pac-radio-group">
+        ${["Sí","A veces","No"].map(o=>`<input type="radio" name="sa-${fbId}" id="sa-${o}-${fbId}" value="${o}"><label for="sa-${o}-${fbId}">${o}</label>`).join("")}
+      </div>
+    </div>
+    <div class="pac-field"><label>¿Cómo tolerás el tratamiento?</label>
+      <div class="pac-radio-group">
+        ${["Muy bien","Bien","Regular","Mal"].map(o=>`<input type="radio" name="st-${fbId}" id="st-${o}-${fbId}" value="${o}"><label for="st-${o}-${fbId}">${o}</label>`).join("")}
+      </div>
+      <input type="text" id="st-det-${fbId}" placeholder="¿Algún efecto no deseado?" style="margin-top:6px"/>
+    </div>
+    <div class="pac-field"><label>Alimentación actual</label>
+      <div class="pac-radio-group">
+        ${["Mejoró","Igual","Empeoró"].map(o=>`<input type="radio" name="sal-${fbId}" id="sal-${o}-${fbId}" value="${o}"><label for="sal-${o}-${fbId}">${o}</label>`).join("")}
+      </div>
+      <input type="text" id="sal-det-${fbId}" placeholder="Detalles..." style="margin-top:6px"/>
+    </div>
+    <div class="pac-field"><label>Calidad de sueño</label>
+      <div class="pac-radio-group">
+        ${["Muy buena","Buena","Regular","Mala"].map(o=>`<input type="radio" name="ssu-${fbId}" id="ssu-${o}-${fbId}" value="${o}"><label for="ssu-${o}-${fbId}">${o}</label>`).join("")}
+      </div>
+    </div>
+    <div class="pac-field"><label>Nivel de estrés</label>
+      <div class="pac-radio-group">
+        ${["Bajo","Medio","Alto"].map(o=>`<input type="radio" name="se-${fbId}" id="se-${o}-${fbId}" value="${o}"><label for="se-${o}-${fbId}">${o}</label>`).join("")}
+      </div>
+    </div>
+    <div class="pac-field"><label>¿Cambios en rutina o alimentación?</label>
+      <div class="pac-radio-group">
+        ${["Sí","No"].map(o=>`<input type="radio" name="sr-${fbId}" id="sr-${o}-${fbId}" value="${o}"><label for="sr-${o}-${fbId}">${o}</label>`).join("")}
+      </div>
+      <input type="text" id="sr-det-${fbId}" placeholder="¿Cuáles?" style="margin-top:6px"/>
+    </div>
+    <div class="pac-field"><label>Notas adicionales</label><textarea id="sn-${fbId}"></textarea></div>
+    <div class="pac-btn-row">
+      <button class="pac-btn pac-btn-primary" onclick="guardarSeguimiento('${fbId}')">Guardar seguimiento</button>
+      <button class="pac-btn pac-btn-secondary" onclick="toggleFormSeg('${fbId}')">Cancelar</button>
+      <span id="seg-status-${fbId}" class="pac-save-status"></span>
+    </div>
+  </div>`;
+}
+
+function togglePacCard(fbId){document.getElementById("pac-"+fbId).classList.toggle("open");}
+function toggleFormSeg(fbId){const f=document.getElementById("form-seg-"+fbId);f.style.display=f.style.display==="none"||!f.style.display?"block":"none";}
+
+function abrirNuevoPaciente(){document.getElementById("modalNuevoPaciente").classList.add("visible");}
+function cerrarModalPaciente(){document.getElementById("modalNuevoPaciente").classList.remove("visible");}
+document.getElementById("modalNuevoPaciente").addEventListener("click",function(e){if(e.target===this)cerrarModalPaciente();});
+
+async function guardarNuevoPaciente(){
+  const status=document.getElementById("np-status");
+  status.textContent="Guardando...";status.className="pac-save-status";status.style.display="inline";
+  const diagSel=getR("np-diag");
+  const pac={
+    nombre:document.getElementById("np-nombre").value.trim(),
+    edad:document.getElementById("np-edad").value,
+    peso:document.getElementById("np-peso").value,
+    sexo:getR("np-sexo"),
+    motivo:document.getElementById("np-motivo").value.trim(),
+    tiempo:getR("np-tiempo"),
+    intensidad:parseInt(document.getElementById("np-intensidad").value),
+    diagnostico:diagSel==="Sí"?document.getElementById("np-diag-det").value:diagSel,
+    medicacion:document.getElementById("np-medicacion").value.trim(),
+    alimentacion:document.getElementById("np-alimentacion").value.trim(),
+    sueno:getR("np-sueno"),
+    estres:getR("np-est"),
+    productos:document.getElementById("np-productos").value.trim(),
+    seguimientos:[],
+    fechaCreacion:new Date().toLocaleDateString("es-AR")
+  };
+  try {
+    const fbId=await window.savePaciente(pac);
+    pac.fbId=fbId;window._pacientes.push(pac);
+    status.textContent="✓ Guardado";
+    setTimeout(()=>{cerrarModalPaciente();renderPacientes();},600);
+  } catch(e){status.textContent="✗ Error al guardar";status.className="pac-save-status error";}
+}
+
+async function guardarSeguimiento(fbId){
+  const status=document.getElementById("seg-status-"+fbId);
+  status.textContent="Guardando...";status.className="pac-save-status";status.style.display="inline";
+  const sintomaSel=getR("ss-"+fbId);
+  const alDet=document.getElementById("sal-det-"+fbId).value;
+  const seg={
+    fecha:new Date().toLocaleDateString("es-AR"),
+    sintoma:sintomaSel==="Otro"?document.getElementById("ss-otro-"+fbId).value:sintomaSel,
+    intensidad:parseInt(document.getElementById("si-"+fbId).value),
+    peso:document.getElementById("sp-"+fbId).value,
+    cambio:getR("sc-"+fbId)+(document.getElementById("sc-det-"+fbId).value?" — "+document.getElementById("sc-det-"+fbId).value:""),
+    adherencia:getR("sa-"+fbId),
+    tolerancia:getR("st-"+fbId)+(document.getElementById("st-det-"+fbId).value?" — "+document.getElementById("st-det-"+fbId).value:""),
+    alimentacion:getR("sal-"+fbId)+(alDet?" — "+alDet:""),
+    sueno:getR("ssu-"+fbId),
+    estres:getR("se-"+fbId),
+    cambioRutina:getR("sr-"+fbId)+(document.getElementById("sr-det-"+fbId).value?" — "+document.getElementById("sr-det-"+fbId).value:""),
+    notas:document.getElementById("sn-"+fbId).value
+  };
+  const idx=window._pacientes.findIndex(p=>p.fbId===fbId);
+  if(idx>-1){
+    if(!window._pacientes[idx].seguimientos)window._pacientes[idx].seguimientos=[];
+    window._pacientes[idx].seguimientos.push(seg);
+    try {
+      await window.savePaciente(window._pacientes[idx]);
+      status.textContent="✓ Guardado";renderPacientes();
+      setTimeout(()=>document.getElementById("pac-"+fbId)?.classList.add("open"),100);
+    } catch(e){status.textContent="✗ Error";status.className="pac-save-status error";}
+  }
+}
+
+async function eliminarPaciente(fbId){
+  if(!confirm("¿Eliminar este paciente? No se puede deshacer."))return;
+  try{await window.deletePaciente(fbId);window._pacientes=window._pacientes.filter(p=>p.fbId!==fbId);renderPacientes();}
+  catch(e){alert("Error al eliminar");}
+}
+
+/* ASISTENTE GEMINI */
+function renderChips(){
+  const container=document.getElementById("geminiChips");container.innerHTML="";
+  window._chips.forEach(chip=>{
+    const btn=document.createElement("button");btn.className="gem-chip";btn.textContent=chip;
+    btn.onclick=()=>{document.getElementById("geminiInput").value=chip+" — ";document.getElementById("geminiInput").focus();};
+    container.appendChild(btn);
+  });
+}
+function openGemini(){renderChips();document.getElementById("geminiOverlay").classList.add("visible");document.getElementById("geminiResponse").style.display="none";}
+function closeGemini(){document.getElementById("geminiOverlay").classList.remove("visible");}
+document.getElementById("geminiOverlay").addEventListener("click",function(e){if(e.target===this)closeGemini();});
+
+async function askGemini(){
+  const input=document.getElementById("geminiInput").value.trim();if(!input)return;
+  const btn=document.getElementById("geminiSendBtn");
+  const respBox=document.getElementById("geminiResponse");
+  const respText=document.getElementById("geminiResponseText");
+  btn.disabled=true;respBox.style.display="block";
+  respText.innerHTML='<div class="gem-loading"><span></span><span></span><span></span> Analizando caso...</div>';
+  const catalogo=P.map(p=>`- ${p.nombre} (${p.formato}): ${p.indicaciones}. Precauciones: ${p.precauciones||"ninguna"}.`).join("\n");
+  const prompt=`Sos una asistente clínica de Zhen Lab especializada en fitoterapia, adaptógenos y medicina tradicional china. Ayudás a médicos a elegir productos del catálogo para sus pacientes.
+
+CATÁLOGO:
+${catalogo}
+
+CONSULTA: ${input}
+
+Respondé en español, tono clínico pero accesible. Recomendá máximo 3 productos del catálogo explicando por qué. Mencioná precauciones relevantes. Si validás una indicación previa, evaluá si es correcta. Sé honesta si el catálogo no tiene algo ideal.`;
+  try {
+    const GROQ_KEY="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";
+    const res=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+GROQ_KEY,"Content-Type":"application/json"},body:JSON.stringify({model:"llama3-70b-8192",messages:[{role:"user",content:prompt}],max_tokens:1000})});
+    const data=await res.json();
+    respText.textContent=data.choices?.[0]?.message?.content||"Sin respuesta";
+  } catch(e){respText.textContent="Error al consultar. Verificá tu conexión.";}
+  btn.disabled=false;
+}
+document.getElementById("geminiInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.ctrlKey)askGemini();});
+
+/* PANEL ADMIN */
+function openAdmin(){document.getElementById("adminOverlay").classList.add("visible");if(!adminAuth){document.getElementById("adminLogin").style.display="flex";document.getElementById("adminContent").style.display="none";setTimeout(()=>document.getElementById("adminPwInput").focus(),100);}}
+function closeAdmin(){document.getElementById("adminOverlay").classList.remove("visible");}
+document.getElementById("adminOverlay").addEventListener("click",function(e){if(e.target===this)closeAdmin();});
+function checkPw(){const val=document.getElementById("adminPwInput").value;const err=document.getElementById("adminPwError");if(val===ADMIN_PW){adminAuth=true;err.style.display="none";document.getElementById("adminPwInput").value="";document.getElementById("adminLogin").style.display="none";document.getElementById("adminContent").style.display="flex";renderAdminList();renderAdminChips();}else{err.style.display="block";document.getElementById("adminPwInput").select();}}
+function adminLogout(){adminAuth=false;document.getElementById("adminContent").style.display="none";document.getElementById("adminLogin").style.display="flex";}
+function switchTab(tab){document.querySelectorAll(".admin-tab").forEach((t,i)=>{t.classList.toggle("active",["productos","chips"][i]===tab);});document.querySelectorAll(".admin-tab-content").forEach(c=>c.classList.remove("active"));document.getElementById("tab-"+tab).classList.add("active");}
+function renderAdminList(){
+  const q=normalize(document.getElementById("adminSearchInput").value);const words=q.split(/\s+/).filter(Boolean);
+  const list=document.getElementById("adminList");list.innerHTML="";
+  const filtered=P.filter(p=>{if(!words.length)return true;return words.every(w=>normalize(p.nombre+" "+p.categoria+" "+p.formato+" "+(p.proveedor||"")).includes(w));});
+  filtered.forEach(p=>{
+    const item=document.createElement("div");item.className="admin-item";item.id="adm-"+p.id;
+    item.innerHTML=`<div class="admin-item-header" onclick="toggleAdminItem('${p.id}')"><div><div class="admin-item-name">${p.nombre}</div><div class="admin-item-sub">${p.proveedor} · ${p.formato}</div></div><div class="admin-item-price">$${p.precio.toLocaleString("es-AR")}</div></div><div class="admin-item-body"><div class="admin-field"><label>Precio ($)</label><input type="number" id="adm-precio-${p.id}" value="${p.precio}" min="0" step="100"/></div><div class="admin-field"><label>Indicaciones</label><textarea id="adm-ind-${p.id}">${escHtml(p.indicaciones||"")}</textarea></div><div class="admin-field"><label>Precauciones</label><textarea id="adm-prec-${p.id}">${escHtml(p.precauciones||"")}</textarea></div><div class="admin-field"><label>Mensaje WhatsApp</label><textarea class="wsp-area" id="adm-wsp-${p.id}">${escHtml(p.wsp||"")}</textarea></div><div class="admin-save-row"><button class="admin-save-btn" id="adm-btn-${p.id}" onclick="saveProduct('${p.id}')">Guardar en Firebase</button><span class="admin-save-status" id="adm-status-${p.id}"></span></div></div>`;
+    list.appendChild(item);
+  });
+}
+function toggleAdminItem(id){document.getElementById("adm-"+id).classList.toggle("open");}
+function escHtml(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+async function saveProduct(id){
+  const btn=document.getElementById("adm-btn-"+id);const status=document.getElementById("adm-status-"+id);
+  const precio=parseInt(document.getElementById("adm-precio-"+id).value)||0;
+  const indicaciones=document.getElementById("adm-ind-"+id).value.trim();
+  const precauciones=document.getElementById("adm-prec-"+id).value.trim();
+  const wsp=document.getElementById("adm-wsp-"+id).value;
+  btn.disabled=true;status.style.display="none";status.className="admin-save-status";
+  try{await window.saveToFirebase(id,{precio,indicaciones,precauciones,wsp});const idx=P.findIndex(p=>p.id===id);if(idx>-1){P[idx].precio=precio;P[idx].indicaciones=indicaciones;P[idx].precauciones=precauciones;P[idx].wsp=wsp;}document.querySelector("#adm-"+id+" .admin-item-price").textContent="$"+precio.toLocaleString("es-AR");filterProducts();status.textContent="✓ Guardado";status.style.display="inline";}
+  catch(e){status.textContent="✗ Error: "+e.message;status.className="admin-save-status error";status.style.display="inline";}
+  btn.disabled=false;
+}
+function renderAdminChips(){const list=document.getElementById("chipsList");list.innerHTML="";window._chips.forEach((chip,i)=>{const row=document.createElement("div");row.className="chip-row";row.innerHTML=`<input type="text" value="${escHtml(chip)}" onchange="window._chips[${i}]=this.value"/><button class="chip-del" onclick="deleteChip(${i})">✕</button>`;list.appendChild(row);});}
+function deleteChip(i){window._chips.splice(i,1);renderAdminChips();}
+function addChip(){const input=document.getElementById("newChipInput");const val=input.value.trim();if(!val)return;window._chips.push(val);input.value="";renderAdminChips();}
+function importChips(fileInput){const file=fileInput.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{const lines=e.target.result.split("\n").map(l=>l.trim()).filter(Boolean);window._chips=[...window._chips,...lines];renderAdminChips();};reader.readAsText(file);}
+async function saveChips(){const status=document.getElementById("chipsStatus");status.className="admin-save-status";status.textContent="Guardando...";try{await window.saveChipsToFirebase(window._chips);renderChips();status.textContent="✓ Guardado";}catch(e){status.textContent="✗ Error";status.className="admin-save-status error";}}
+
+function switchView(view){
+  document.getElementById('view-catalogo').style.display=view==='catalogo'?'block':'none';
+  document.getElementById('view-pacientes').style.display=view==='pacientes'?'block':'none';
+  const nc=document.getElementById('nav-catalogo');
+  const np=document.getElementById('nav-pacientes');
+  nc.style.background=view==='catalogo'?'var(--dark-green)':'transparent';
+  nc.style.color=view==='catalogo'?'white':'var(--muted)';
+  nc.style.border=view==='catalogo'?'none':'1px solid var(--border)';
+  np.style.background=view==='pacientes'?'var(--dark-green)':'transparent';
+  np.style.color=view==='pacientes'?'white':'var(--muted)';
+  np.style.border=view==='pacientes'?'none':'1px solid var(--border)';
+}
+
+filterProducts();
+renderPacientes();
+</script>
+</body>
+</html>
